@@ -10,9 +10,7 @@ const routes = [
   },
   {
     path: '/',
-    name: 'Home',
-    component: () => import('../views/HomeView.vue'),
-    meta: { requiresAuth: true }
+    redirect: '/terminal'
   },
   {
     path: '/terminal',
@@ -45,7 +43,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !token) {
     next({ name: 'Login' })
   } else if (to.meta.guest && token) {
-    next({ name: 'Home' })
+    next({ name: 'Terminal' })
   } else {
     next()
   }

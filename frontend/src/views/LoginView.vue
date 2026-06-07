@@ -35,7 +35,7 @@ async function handleSubmit() {
     } else {
       await authStore.register(username.value, password.value)
     }
-    router.push('/')
+    router.push('/terminal')
   } catch (err) {
     error.value = err.response?.data?.detail || err.message || t('login.authFailed')
   } finally {

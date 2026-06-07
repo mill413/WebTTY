@@ -130,7 +130,7 @@ const timeoutPresets = [
 ]
 
 function goBack() {
-  router.push('/')
+  router.push('/terminal')
 }
 
 function logout() {

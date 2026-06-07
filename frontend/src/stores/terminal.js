@@ -65,6 +65,13 @@ export const useTerminalStore = defineStore('terminal', {
       if (idx === -1) return
 
       const closedTab = this.tabs[idx]
+
+      // Delete the session on backend for terminal tabs (not settings)
+      if (closedTab.type !== 'settings') {
+        api.delete(`/api/sessions/${closedTab.sessionId}`).catch(() => {})
+        this.sessions = this.sessions.filter((s) => s.id !== closedTab.sessionId)
+      }
+
       this.tabs.splice(idx, 1)
 
       if (this.activeTabId === tabId) {
