@@ -14,6 +14,14 @@ const { t } = useI18n()
 const editingTabId = ref(null)
 const editingTitle = ref('')
 const dragTabId = ref(null)
+const showShellMenu = ref(false)
+
+const shells = [
+  { value: '/bin/bash', label: 'Bash' },
+  { value: '/bin/zsh', label: 'Zsh' },
+  { value: '/usr/bin/fish', label: 'Fish' },
+  { value: '/bin/sh', label: 'SH' }
+]
 
 function handleClick(tabId) {
   if (editingTabId.value !== null) return
@@ -58,12 +66,20 @@ function handleDragOver(event) {
 
 function handleDrop(targetTabId, event) {
   event.preventDefault()
-  // Reorder is handled by the parent if needed
   dragTabId.value = null
 }
 
 function handleDragEnd() {
   dragTabId.value = null
+}
+
+function toggleShellMenu() {
+  showShellMenu.value = !showShellMenu.value
+}
+
+function selectShell(shell) {
+  emit('new-tab', shell)
+  showShellMenu.value = false
 }
 
 function getShellIcon(shell) {
@@ -77,7 +93,7 @@ function getShellIcon(shell) {
 </script>
 
 <template>
-  <div class="tab-bar">
+  <div class="tab-bar" @click="showShellMenu = false">
     <div class="tabs-scroll">
       <div
         v-for="tab in tabs"
@@ -105,21 +121,33 @@ function getShellIcon(shell) {
         />
         <span v-else class="tab-title truncate">{{ tab.title }}</span>
 
-        <button class="tab-close" @click="handleClose(tab.id, $event)" title="Close">
+        <button class="tab-close" @click="handleClose(tab.id, $event)" :title="t('tabs.close')">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
-    </div>
 
-    <button class="tab-new" @click="$emit('new-tab', '/bin/bash')" :title="t('tabs.newTerminal')">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-      </svg>
-    </button>
+      <div class="tab-new-wrapper" @click.stop>
+        <button class="tab-new" @click="toggleShellMenu" :title="t('tabs.newTerminal')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+        <div v-if="showShellMenu" class="shell-dropdown">
+          <button
+            v-for="shell in shells"
+            :key="shell.value"
+            class="shell-dropdown-item"
+            @click="selectShell(shell.value)"
+          >
+            {{ shell.label }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -127,10 +155,8 @@ function getShellIcon(shell) {
 .tab-bar {
   display: flex;
   align-items: stretch;
-  height: 36px;
+  height: 100%;
   background: var(--bg-deep);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
   overflow: hidden;
 }
 
@@ -162,6 +188,7 @@ function getShellIcon(shell) {
   transition: background var(--transition);
   user-select: none;
   position: relative;
+  flex-shrink: 0;
 }
 
 .tab:hover {
@@ -234,12 +261,16 @@ function getShellIcon(shell) {
   color: var(--error);
 }
 
+.tab-new-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .tab-new {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  min-width: 36px;
+  width: 28px;
   height: 100%;
   background: transparent;
   border: none;
@@ -250,5 +281,35 @@ function getShellIcon(shell) {
 .tab-new:hover {
   background: var(--surface);
   color: var(--text);
+}
+
+.shell-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 120px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  z-index: 200;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.shell-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  text-align: left;
+  transition: background var(--transition);
+}
+
+.shell-dropdown-item:hover {
+  background: var(--overlay);
 }
 </style>

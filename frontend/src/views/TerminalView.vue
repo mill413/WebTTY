@@ -132,14 +132,15 @@ function logout() {
 <template>
   <div class="terminal-page">
     <div class="terminal-header">
-      <div class="header-left">
-        <button class="btn-home" @click="goHome" :title="t('terminal.home')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="4 17 10 11 4 5" />
-            <line x1="12" y1="19" x2="20" y2="19" />
-          </svg>
-        </button>
-        <span class="header-brand">WebTTY</span>
+      <div class="header-tabs">
+        <TerminalTabs
+          :tabs="terminalStore.tabs"
+          :activeTabId="terminalStore.activeTabId"
+          @switch="handleTabSwitch"
+          @close="handleTabClose"
+          @rename="handleTabRename"
+          @new-tab="handleNewTerminal"
+        />
       </div>
       <div class="header-right">
         <ThemeToggle />
@@ -154,17 +155,7 @@ function logout() {
       </div>
     </div>
 
-    <TerminalTabs
-      :tabs="terminalStore.tabs"
-      :activeTabId="terminalStore.activeTabId"
-      @switch="handleTabSwitch"
-      @close="handleTabClose"
-      @rename="handleTabRename"
-      @new-tab="handleNewTerminal"
-    />
-
     <TerminalToolbar
-      @new-terminal="handleNewTerminal"
       @toggle-search="toggleSearch"
       @toggle-file-browser="toggleFileBrowser"
       :showFileBrowser="showFileBrowser"
@@ -226,49 +217,25 @@ function logout() {
 
 .terminal-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: stretch;
   height: 36px;
-  padding: 0 12px;
   background: var(--bg-deep);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-home {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  color: var(--subtext);
-  transition: all var(--transition);
-}
-
-.btn-home:hover {
-  background: var(--surface);
-  color: var(--text);
-}
-
-.header-brand {
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--subtext);
+.header-tabs {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0 12px;
+  flex-shrink: 0;
 }
 
 .user-label {

@@ -1,9 +1,8 @@
 <script setup>
-import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const emit = defineEmits(['new-terminal', 'toggle-search', 'toggle-file-browser', 'upload'])
+defineEmits(['toggle-search', 'toggle-file-browser', 'upload'])
 
 const props = defineProps({
   showFileBrowser: {
@@ -11,53 +10,11 @@ const props = defineProps({
     default: false
   }
 })
-
-const showShellMenu = ref(false)
-const shells = [
-  { value: '/bin/bash', label: 'Bash' },
-  { value: '/bin/zsh', label: 'Zsh' },
-  { value: '/usr/bin/fish', label: 'Fish' },
-  { value: '/bin/sh', label: 'SH' }
-]
-
-function selectShell(shell) {
-  emit('new-terminal', shell)
-  showShellMenu.value = false
-}
-
-function toggleShellMenu() {
-  showShellMenu.value = !showShellMenu.value
-}
 </script>
 
 <template>
   <div class="toolbar">
     <div class="toolbar-left">
-      <div class="shell-selector" @click.stop>
-        <button class="toolbar-btn primary-btn" @click="toggleShellMenu">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          {{ t('toolbar.new') }}
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-        <div v-if="showShellMenu" class="shell-dropdown">
-          <button
-            v-for="shell in shells"
-            :key="shell.value"
-            class="shell-dropdown-item"
-            @click="selectShell(shell.value)"
-          >
-            {{ shell.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="toolbar-divider"></div>
-
       <button class="toolbar-btn" @click="$emit('toggle-search')" :title="t('toolbar.search') + ' (Ctrl+Shift+F)'">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8" />
@@ -115,13 +72,6 @@ function toggleShellMenu() {
   gap: 2px;
 }
 
-.toolbar-divider {
-  width: 1px;
-  height: 16px;
-  background: var(--border);
-  margin: 0 6px;
-}
-
 .toolbar-btn {
   display: flex;
   align-items: center;
@@ -150,48 +100,5 @@ function toggleShellMenu() {
 .toolbar-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.primary-btn {
-  color: var(--accent);
-}
-
-.primary-btn:hover {
-  background: rgba(124, 58, 237, 0.1);
-  color: var(--accent) !important;
-}
-
-.shell-selector {
-  position: relative;
-}
-
-.shell-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  min-width: 120px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 4px;
-  z-index: 100;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-.shell-dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 6px 12px;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  color: var(--text);
-  font-size: 12px;
-  text-align: left;
-  transition: background var(--transition);
-}
-
-.shell-dropdown-item:hover {
-  background: var(--overlay);
 }
 </style>
