@@ -118,8 +118,20 @@ export const useTerminalStore = defineStore('terminal', {
 
     async deleteSession(sessionId) {
       await api.delete(`/api/sessions/${sessionId}`)
+      // Remove tab without navigating (closeTab triggers router.push)
       const tab = this.tabs.find((t) => t.sessionId === sessionId)
-      if (tab) this.closeTab(tab.id)
+      if (tab) {
+        const idx = this.tabs.findIndex((t) => t.id === tab.id)
+        this.tabs.splice(idx, 1)
+        if (this.activeTabId === tab.id) {
+          if (this.tabs.length > 0) {
+            const newIdx = Math.min(idx, this.tabs.length - 1)
+            this.activeTabId = this.tabs[newIdx].id
+          } else {
+            this.activeTabId = null
+          }
+        }
+      }
       this.sessions = this.sessions.filter((s) => s.id !== sessionId)
     }
   }
