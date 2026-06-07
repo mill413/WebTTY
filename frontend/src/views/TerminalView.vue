@@ -254,7 +254,7 @@ function logout() {
 .header-tabs {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  height: 36px;
 }
 
 .header-right {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
@@ -17,6 +17,10 @@ const dragTabId = ref(null)
 const showShellMenu = ref(false)
 const newBtnRef = ref(null)
 const menuPos = ref({ top: 0, left: 0 })
+const tabBarRef = ref(null)
+const cornerLeft = ref(0)
+const cornerRight = ref(0)
+const cornerVisible = ref(false)
 
 const shells = [
   { value: '/bin/bash', label: 'Bash' },
@@ -34,14 +38,6 @@ function onClickOutside(e) {
     closeShellMenu()
   }
 }
-
-onMounted(() => {
-  document.addEventListener('click', onClickOutside, true)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', onClickOutside, true)
-})
 
 function handleClick(tabId) {
   if (editingTabId.value !== null) return
@@ -120,10 +116,50 @@ function getShellIcon(shell) {
   if (s.includes('bash')) return '$'
   return '>'
 }
+
+function updateCorners() {
+  if (!tabBarRef.value) return
+  const activeEl = tabBarRef.value.querySelector('.tab.active')
+  if (!activeEl) {
+    cornerVisible.value = false
+    return
+  }
+  const barRect = tabBarRef.value.getBoundingClientRect()
+  const tabRect = activeEl.getBoundingClientRect()
+  cornerLeft.value = tabRect.left - barRect.left
+  cornerRight.value = tabRect.right - barRect.left
+  cornerVisible.value = true
+}
+
+watch(() => props.activeTabId, () => {
+  nextTick(updateCorners)
+})
+
+watch(() => props.tabs, () => {
+  nextTick(updateCorners)
+}, { deep: true })
+
+let resizeObserver = null
+
+onMounted(() => {
+  document.addEventListener('click', onClickOutside, true)
+  nextTick(updateCorners)
+  window.addEventListener('resize', updateCorners)
+  if (tabBarRef.value) {
+    resizeObserver = new ResizeObserver(updateCorners)
+    resizeObserver.observe(tabBarRef.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onClickOutside, true)
+  window.removeEventListener('resize', updateCorners)
+  if (resizeObserver) resizeObserver.disconnect()
+})
 </script>
 
 <template>
-  <div class="tab-bar" @click="showShellMenu = false">
+  <div ref="tabBarRef" class="tab-bar" @click="showShellMenu = false">
     <div class="tabs-scroll">
       <div
         v-for="tab in tabs"
@@ -169,6 +205,9 @@ function getShellIcon(shell) {
       </div>
     </div>
 
+    <span v-if="cornerVisible" class="tab-corner tab-corner--left" :style="{ left: (cornerLeft - 8) + 'px' }" />
+    <span v-if="cornerVisible" class="tab-corner tab-corner--right" :style="{ left: cornerRight + 'px' }" />
+
     <Teleport to="body">
       <div v-if="showShellMenu" class="shell-dropdown" :style="{ top: menuPos.top + 'px', left: menuPos.left + 'px' }" @click.stop>
         <button
@@ -190,14 +229,33 @@ function getShellIcon(shell) {
   align-items: stretch;
   height: 100%;
   background: var(--bg-deep);
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
+}
+
+.tab-corner {
+  position: absolute;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--bg);
+  pointer-events: none;
+}
+
+.tab-corner--left {
+  border-bottom-left-radius: 8px;
+}
+
+.tab-corner--right {
+  border-bottom-right-radius: 8px;
 }
 
 .tabs-scroll {
   display: flex;
   flex: 1;
+  gap: 3px;
+  padding: 0 4px;
   overflow-x: auto;
-  overflow-y: hidden;
   scrollbar-width: none;
 }
 
@@ -214,7 +272,8 @@ function getShellIcon(shell) {
   max-width: 200px;
   height: 100%;
   background: transparent;
-  border-right: 1px solid var(--border);
+  border: none;
+  border-radius: 8px 8px 0 0;
   color: var(--subtext);
   font-size: 12px;
   cursor: pointer;
@@ -231,16 +290,8 @@ function getShellIcon(shell) {
 .tab.active {
   background: var(--bg);
   color: var(--text);
-}
-
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--accent);
+  box-shadow: inset 0 -3px 0 0 var(--accent);
+  z-index: 1;
 }
 
 .tab-icon {
@@ -290,13 +341,15 @@ function getShellIcon(shell) {
 }
 
 .tab-close:hover {
-  background: rgba(243, 139, 168, 0.2);
+  background: rgba(243, 139, 168, 0.15);
   color: var(--error);
 }
 
 .tab-new-wrapper {
   position: relative;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .tab-new {
@@ -304,11 +357,13 @@ function getShellIcon(shell) {
   align-items: center;
   justify-content: center;
   width: 28px;
-  height: 100%;
+  height: 28px;
   background: transparent;
   border: none;
+  border-radius: 50%;
   color: var(--subtext);
   transition: all var(--transition);
+  cursor: pointer;
 }
 
 .tab-new:hover {

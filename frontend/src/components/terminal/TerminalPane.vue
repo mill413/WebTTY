@@ -94,7 +94,7 @@ onUnmounted(() => {
 function initTerminal() {
   terminal = new Terminal({
     cursorBlink: true,
-    cursorStyle: 'block',
+    cursorStyle: 'bar',
     cursorWidth: 2,
     scrollback: 5000,
     fontSize: 14,
