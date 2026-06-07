@@ -1,8 +1,8 @@
 # WebTTY
 
 <p align="center">
-  <strong>A self-hosted, enterprise-grade web terminal platform</strong><br>
-  Access your servers from anywhere through a modern browser — no SSH client required.
+  <strong>A self-hosted web terminal that brings the full power of your server to any browser.</strong><br>
+  Open a tab, pick your shell, and start working — no SSH client, no setup, no friction.
 </p>
 
 <p align="center">
@@ -17,20 +17,69 @@
 
 ---
 
+WebTTY turns any modern browser into a fully-featured terminal. Built with **FastAPI** and **Vue 3**, it provides real PTY sessions with support for bash, zsh, fish, nushell and more — including oh-my-zsh themes and interactive TUI programs like vim, htop, and less.
+
+A built-in **file browser** lets you browse, upload, download, rename, and delete files alongside your terminal. A **Catppuccin-themed** UI with dark/light modes, customizable accent colors, multi-tab support, and four languages (English, 简体中文, 繁體中文, 日本語) make it pleasant to use every day.
+
+Deploy with a single script or Docker — and access your server from anywhere.
+
 ## Features
 
-- **Full Terminal Experience** — Run bash, zsh, fish and any other shell with full PTY support
-- **Interactive Programs** — vim, less, top, htop and other TUI applications work flawlessly
-- **Multi-Tab Interface** — Open multiple terminal sessions in a single browser window
-- **Settings as Tabs** — Settings page opens as a tab within the terminal view for seamless workflow
-- **Multi-Language Support** — English, 简体中文, 繁體中文, 日本語 with browser auto-detection
-- **WebSocket Binary Protocol** — Efficient, low-latency communication with custom binary framing
-- **oh-my-zsh Support** — Full compatibility with themes, plugins and autocompletion
-- **Session Persistence** — Reconnect to running sessions without losing state
-- **Audit Logging** — Track all user actions for compliance and security
-- **File Management** — Upload and download files through the terminal interface
-- **JWT Authentication** — Secure access with token-based authentication
-- **One-Click Deploy** — Run with Docker or a single shell script
+### Terminal
+
+- **Full PTY Support** — Real pseudo-terminal via `pty.fork()` with login shell invocation; bash, zsh, fish, nushell, and more
+- **Dynamic Shell Detection** — Automatically discovers available shells from `/etc/shells` and PATH, with brand SVG icons
+- **Interactive Programs** — vim, less, top, htop, and all TUI applications work flawlessly
+- **oh-my-zsh Compatibility** — Full support for themes, plugins, and autocompletion
+- **Session Persistence** — Disconnect and reconnect to running sessions without losing state; sessions survive server restarts
+- **Custom Binary WebSocket Protocol** — Efficient, low-latency terminal I/O with heartbeat keep-alive
+- **xterm.js Powered** — 256-color support, 5000-line scrollback, search, clickable URLs, Unicode 11
+
+### Multi-Tab Interface
+
+- **Multiple Sessions** — Open and switch between multiple terminal sessions in a single window
+- **Tab Management** — Create, close, rename (double-click), and drag-reorder tabs
+- **Settings as a Tab** — Settings page opens as a tab within the terminal view for seamless workflow
+- **Customizable Tab Titles** — Template-based titles with `{shell}`, `{index}`, `{title}`, `{user}`, `{cwd}` variables
+- **Dynamic Browser Title** — Window title updates to reflect the active session
+
+### File Browser
+
+- **Sidebar Explorer** — Toggleable, resizable sidebar with directory tree view and breadcrumb navigation
+- **Full File Operations** — Browse, upload, download, create directories, rename, and delete files
+- **Catppuccin File Icons** — 200+ themed SVG icons for files and folders
+- **Context Menu** — Right-click for quick file operations
+- **Configurable Root** — Set the browse root directory via environment variable
+- **Path Traversal Protection** — All file paths validated to stay within the allowed root
+
+### Appearance & Customization
+
+- **Catppuccin Color Scheme** — Mocha (dark) and Latte (light) palettes for both UI and terminal
+- **Three Theme Modes** — System (follows OS preference), Dark, and Light
+- **Customizable Accent Color** — 7 presets (violet, blue, emerald, amber, red, pink, cyan) plus a custom color picker
+- **Configurable Status Bar** — Show/hide, drag-to-reorder items (shell, process status, connection), left/right positioning
+- **Sidebar Position** — Choose left or right side for the file browser
+
+### Internationalization
+
+- **Four Languages** — English, 简体中文, 繁體中文, 日本語
+- **Browser Auto-Detection** — Matches `navigator.language` with prefix fallback
+- **Persistent Preference** — Saved to both localStorage and server-side user settings
+
+### Security & Administration
+
+- **JWT Authentication** — Token-based auth with access/refresh token rotation and bcrypt password hashing
+- **User Avatar** — Upload and display profile pictures (PNG, JPEG, WebP, GIF)
+- **Audit Logging** — Track all user actions and executed commands with risk levels
+- **Admin Controls** — Admin-only audit event listing; per-user access scoping
+- **Password Management** — Change password with current password verification
+
+### Deployment & Operations
+
+- **One-Click Deploy** — Single shell script handles dependency checks, build, and server startup
+- **Docker Support** — Multi-stage build with persistent volumes and auto-restart
+- **Session Auto-Cleanup** — Stale sessions cleaned on server restart; expired sessions auto-deleted by configurable timeout
+- **Database Flexibility** — SQLite by default, PostgreSQL supported for production
 
 ## Architecture
 
@@ -40,7 +89,7 @@ Browser (xterm.js)
     │  HTTPS / WSS
     ▼
 FastAPI Backend
-    ├── REST API (auth, sessions, files, audit)
+    ├── REST API (auth, sessions, files, settings, audit)
     └── WebSocket Handler (binary protocol)
             │
             ▼
@@ -48,18 +97,21 @@ FastAPI Backend
             │
             ├── bash
             ├── zsh (oh-my-zsh)
-            └── fish
+            ├── fish
+            ├── nushell
+            └── sh / dash / ksh / csh / tcsh
 ```
 
 **Tech Stack**
 
-| Layer    | Technology                                  |
-| -------- | ------------------------------------------- |
-| Frontend | Vue 3 (Composition API), Pinia, xterm.js v5 |
-| Backend  | FastAPI, SQLAlchemy (async), aiosqlite      |
-| Terminal | Python PTY (pty.fork), login shell          |
-| Database | SQLite (default), PostgreSQL supported      |
-| Auth     | JWT with RSA, bcrypt password hashing       |
+| Layer    | Technology                                       |
+| -------- | ------------------------------------------------ |
+| Frontend | Vue 3 (Composition API), Pinia, xterm.js v5      |
+| Backend  | FastAPI, SQLAlchemy (async), aiosqlite / asyncpg |
+| Terminal | Python PTY (`pty.fork`), login shell             |
+| Database | SQLite (default), PostgreSQL supported           |
+| Auth     | JWT (HS256), bcrypt password hashing             |
+| i18n     | vue-i18n with browser locale auto-detection      |
 
 ## Quick Start
 
@@ -117,11 +169,14 @@ All settings are configured via environment variables (prefix: `WEBTTY_`):
 | -------------------------------------- | -------------------------------------- | -------------------------------------------- |
 | `WEBTTY_SECRET_KEY`                    | Auto-generated                         | JWT signing key. **Set this in production.** |
 | `WEBTTY_DATABASE_URL`                  | `sqlite+aiosqlite:///./webtty.db`      | Database connection string                   |
+| `WEBTTY_BROWSE_ROOT`                   | `~` (user home)                        | Root directory for the file browser          |
 | `WEBTTY_STATIC_DIR`                    | Auto-detected                          | Path to frontend build output                |
-| `WEBTTY_UPLOAD_DIR`                    | `./uploads`                            | Directory for uploaded files                 |
+| `WEBTTY_UPLOAD_DIR`                    | `./uploads`                            | Directory for uploaded files and avatars     |
 | `WEBTTY_ACCESS_TOKEN_EXPIRE_MINUTES`   | `60`                                   | JWT access token lifetime                    |
 | `WEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`     | `7`                                    | JWT refresh token lifetime                   |
 | `WEBTTY_MAX_UPLOAD_SIZE`               | `104857600`                            | Max upload size in bytes (100MB)             |
+| `WEBTTY_HOST`                          | `0.0.0.0`                              | Server bind address                          |
+| `WEBTTY_PORT`                          | `8000`                                 | Server listen port                           |
 
 ### Production Example
 
@@ -134,7 +189,7 @@ export WEBTTY_DATABASE_URL="sqlite+aiosqlite:////data/webtty.db"
 ## Project Structure
 
 ```text
-web-terminal/
+webtty/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI application entry point
@@ -143,11 +198,11 @@ web-terminal/
 │   │   ├── models.py            # Database models (User, Session, etc.)
 │   │   ├── schemas.py           # Pydantic request/response schemas
 │   │   ├── auth/                # Authentication module
-│   │   │   ├── router.py        #   Login, register, refresh endpoints
+│   │   │   ├── router.py        #   Login, register, refresh, avatar endpoints
 │   │   │   ├── service.py       #   JWT token generation and validation
 │   │   │   └── dependencies.py  #   Auth dependency for protected routes
 │   │   ├── session/             # Session management module
-│   │   │   ├── router.py        #   CRUD endpoints for terminal sessions
+│   │   │   ├── router.py        #   CRUD endpoints and shell detection
 │   │   │   └── service.py       #   Session lifecycle logic
 │   │   ├── terminal/            # Terminal runtime module
 │   │   │   ├── host_runtime.py  #   PTY process management (pty.fork)
@@ -156,7 +211,9 @@ web-terminal/
 │   │   │   ├── ws_handler.py    #   WebSocket handler (binary protocol)
 │   │   │   └── router.py        #   WebSocket endpoint registration
 │   │   ├── file/                # File management module
-│   │   │   └── router.py        #   Upload/download endpoints
+│   │   │   └── router.py        #   Browse, upload, download, mkdir, rename, delete
+│   │   ├── settings/            # User settings module
+│   │   │   └── router.py        #   Get/update user preferences
 │   │   └── audit/               # Audit logging module
 │   │       ├── router.py        #   Audit query endpoints
 │   │       └── service.py       #   Audit event recording
@@ -168,22 +225,30 @@ web-terminal/
 │   │   ├── router/              # Vue Router configuration
 │   │   ├── stores/              # Pinia state management
 │   │   │   ├── auth.js          #   Auth state and token management
-│   │   │   └── terminal.js      #   Session and tab state
+│   │   │   ├── terminal.js      #   Session and tab state
+│   │   │   ├── theme.js         #   Theme mode and accent color
+│   │   │   └── settings.js      #   User preferences
+│   │   ├── i18n/                # Internationalization
+│   │   │   ├── index.js         #   i18n setup and browser locale detection
+│   │   │   └── locales/         #   Language files (en-US, zh-CN, zh-TW, ja)
 │   │   ├── services/
 │   │   │   ├── api.js           #   Axios HTTP client
 │   │   │   └── terminal-ws.js   #   WebSocket client (binary protocol)
 │   │   ├── components/
 │   │   │   ├── layout/          #   UI layout components
 │   │   │   │   ├── StatusBar.vue
-│   │   │   │   ├── SplitPane.vue
-│   │   │   │   └── TerminalToolbar.vue
-│   │   │   └── terminal/        #   Terminal-specific components
-│   │   │       ├── TerminalPane.vue   # xterm.js wrapper
-│   │   │       └── TerminalTabs.vue   # Multi-tab UI
+│   │   │   │   └── SplitPane.vue
+│   │   │   ├── terminal/        #   Terminal-specific components
+│   │   │   │   ├── TerminalPane.vue   # xterm.js wrapper
+│   │   │   │   ├── TerminalTabs.vue   # Multi-tab UI
+│   │   │   │   └── FileBrowser.vue    # Sidebar file explorer
+│   │   │   └── common/
+│   │   │       └── ThemeToggle.vue    # Theme mode switcher
 │   │   ├── views/               # Page-level components
 │   │   │   ├── LoginView.vue
 │   │   │   ├── HomeView.vue
-│   │   │   └── TerminalView.vue
+│   │   │   ├── TerminalView.vue
+│   │   │   └── SettingsView.vue
 │   │   └── styles/
 │   │       └── global.css
 │   ├── package.json
@@ -192,9 +257,7 @@ web-terminal/
 ├── docker-compose.yml           # Docker Compose configuration
 ├── deploy.sh                    # One-click deployment script
 ├── .dockerignore
-├── .gitignore
-├── prd.md                       # Product Requirements Document
-└── design.md                    # Technical Design Specification
+└── .gitignore
 ```
 
 ## WebSocket Protocol
@@ -221,11 +284,15 @@ The terminal uses a custom binary protocol for efficiency:
 
 ### Authentication
 
-| Method | Endpoint               | Description                        |
-| ------ | ---------------------- | ---------------------------------- |
-| POST   | `/api/auth/register`   | Create a new user account          |
-| POST   | `/api/auth/login`      | Authenticate and get JWT tokens    |
-| POST   | `/api/auth/refresh`    | Refresh access token               |
+| Method | Endpoint                     | Description                        |
+| ------ | ---------------------------- | ---------------------------------- |
+| POST   | `/api/auth/register`         | Create a new user account          |
+| POST   | `/api/auth/login`            | Authenticate and get JWT tokens    |
+| POST   | `/api/auth/refresh`          | Refresh access token               |
+| GET    | `/api/auth/me`               | Get current user info              |
+| POST   | `/api/auth/change-password`  | Change account password            |
+| POST   | `/api/auth/avatar`           | Upload avatar image                |
+| GET    | `/api/auth/avatar/{filename}`| Serve avatar file                  |
 
 ### Sessions
 
@@ -233,6 +300,8 @@ The terminal uses a custom binary protocol for efficiency:
 | ------ | ------------------------------ | -------------------------------- |
 | GET    | `/api/sessions`                | List all sessions                |
 | POST   | `/api/sessions`                | Create a new terminal session    |
+| GET    | `/api/sessions/shells`         | List available shells            |
+| GET    | `/api/sessions/{id}`           | Get a specific session           |
 | POST   | `/api/sessions/{id}/reconnect` | Reconnect to an existing session |
 | DELETE | `/api/sessions/{id}`           | Delete a session                 |
 
@@ -241,6 +310,35 @@ The terminal uses a custom binary protocol for efficiency:
 | Method    | Endpoint                          | Description                   |
 | --------- | --------------------------------- | ----------------------------- |
 | WebSocket | `/api/terminal/ws/{session_id}`   | Terminal WebSocket connection |
+
+### Files
+
+| Method | Endpoint                       | Description                      |
+| ------ | ------------------------------ | -------------------------------- |
+| GET    | `/api/files/browse`            | Browse directory contents        |
+| POST   | `/api/files/upload-browse`     | Upload file to a directory       |
+| GET    | `/api/files/download-browse`   | Download a file                  |
+| POST   | `/api/files/mkdir`             | Create a new directory           |
+| POST   | `/api/files/rename`            | Rename a file or directory       |
+| POST   | `/api/files/delete`            | Delete a file or directory       |
+| POST   | `/api/files/upload`            | Upload file to a session         |
+| GET    | `/api/files/download`          | Download from a session          |
+| GET    | `/api/files/list`              | List files in a session          |
+
+### Settings
+
+| Method | Endpoint         | Description                  |
+| ------ | ---------------- | ---------------------------- |
+| GET    | `/api/settings`  | Get user settings            |
+| PUT    | `/api/settings`  | Update user settings         |
+
+### Audit
+
+| Method | Endpoint                            | Description                         |
+| ------ | ----------------------------------- | ----------------------------------- |
+| GET    | `/api/audit/commands/{session_id}`  | List commands for a session         |
+| GET    | `/api/audit/events`                 | List all audit events (admin only)  |
+| GET    | `/api/audit/events/{user_id}`       | List events for a user              |
 
 ### Health
 

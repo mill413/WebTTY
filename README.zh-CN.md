@@ -1,8 +1,8 @@
 # WebTTY
 
 <p align="center">
-  <strong>自托管的企业级 Web 终端平台</strong><br>
-  通过现代浏览器从任何地方访问服务器 —— 无需 SSH 客户端。
+  <strong>一个自托管的 Web 终端，将服务器的完整能力带到任意浏览器。</strong><br>
+  打开标签页，选择 shell，即刻开始工作 —— 无需 SSH 客户端，无需配置，零摩擦。
 </p>
 
 <p align="center">
@@ -17,20 +17,69 @@
 
 ---
 
+WebTTY 将任意现代浏览器变成全功能终端。基于 **FastAPI** 和 **Vue 3** 构建，提供真正的 PTY 会话，支持 bash、zsh、fish、nushell 等多种 shell —— 包括 oh-my-zsh 主题和 vim、htop、less 等交互式 TUI 程序。
+
+内置的**文件浏览器**让你在终端旁浏览、上传、下载、重命名和删除文件。**Catppuccin 主题**的 UI 支持深色/浅色模式、自定义强调色、多标签页，以及四种语言（English、简体中文、繁體中文、日本語），让日常使用更加愉悦。
+
+通过单个脚本或 Docker 一键部署 —— 随时随地访问你的服务器。
+
 ## 功能特性
 
-- **完整的终端体验** — 支持 bash、zsh、fish 等任意 shell，完整的 PTY 支持
-- **交互式程序** — vim、less、top、htop 等 TUI 应用完美运行
-- **多标签页界面** — 在单个浏览器窗口中打开多个终端会话
+### 终端
+
+- **完整的 PTY 支持** — 通过 `pty.fork()` 实现真正的伪终端，以登录 shell 方式启动；支持 bash、zsh、fish、nushell 等
+- **动态 Shell 检测** — 自动从 `/etc/shells` 和 PATH 发现可用 shell，配有品牌 SVG 图标
+- **交互式程序** — vim、less、top、htop 等所有 TUI 应用完美运行
+- **oh-my-zsh 兼容** — 完全支持主题、插件和自动补全
+- **会话持久化** — 断开后可重新连接到运行中的会话，不丢失状态；会话在服务重启后存活
+- **自定义二进制 WebSocket 协议** — 高效的低延迟终端 I/O，带心跳保活
+- **xterm.js 驱动** — 256 色支持、5000 行回滚、搜索、可点击 URL、Unicode 11
+
+### 多标签页界面
+
+- **多会话** — 在单个窗口中打开和切换多个终端会话
+- **标签页管理** — 创建、关闭、重命名（双击）和拖拽排序标签页
 - **设置页标签化** — 设置页面作为标签页打开，工作流无缝衔接
-- **多语言支持** — English、简体中文、繁體中文、日本語，自动跟随浏览器语言
-- **WebSocket 二进制协议** — 高效的低延迟通信，自定义二进制帧
-- **oh-my-zsh 支持** — 完全兼容主题、插件和自动补全
-- **会话持久化** — 重新连接到运行中的会话，不丢失状态
-- **审计日志** — 跟踪所有用户操作，满足合规和安全要求
-- **文件管理** — 通过终端界面上传和下载文件
-- **JWT 认证** — 基于令牌的安全访问
-- **一键部署** — 使用 Docker 或单个 shell 脚本运行
+- **自定义标签页标题** — 基于模板的标题，支持 `{shell}`、`{index}`、`{title}`、`{user}`、`{cwd}` 变量
+- **动态浏览器标题** — 窗口标题随活动会话自动更新
+
+### 文件浏览器
+
+- **侧边栏浏览器** — 可切换显示、可调整宽度的侧边栏，带目录树视图和面包屑导航
+- **完整文件操作** — 浏览、上传、下载、创建目录、重命名和删除文件
+- **Catppuccin 文件图标** — 200+ 主题化 SVG 文件和文件夹图标
+- **右键菜单** — 右键点击快速执行文件操作
+- **可配置根目录** — 通过环境变量设置浏览根目录
+- **路径遍历保护** — 所有文件路径经过验证，确保在允许的根目录内
+
+### 外观与自定义
+
+- **Catppuccin 配色方案** — Mocha（深色）和 Latte（浅色）调色板，同时应用于 UI 和终端
+- **三种主题模式** — 跟随系统、深色和浅色
+- **自定义强调色** — 7 种预设色（紫罗兰、蓝、翡翠、琥珀、红、粉、青）加自定义取色器
+- **可配置状态栏** — 显示/隐藏、拖拽排序项目（shell、进程状态、连接状态），左右定位
+- **侧边栏位置** — 选择文件浏览器在左侧或右侧
+
+### 国际化
+
+- **四种语言** — English、简体中文、繁體中文、日本語
+- **浏览器自动检测** — 匹配 `navigator.language`，带前缀回退
+- **持久化偏好** — 同时保存到 localStorage 和服务端用户设置
+
+### 安全与管理
+
+- **JWT 认证** — 基于令牌的认证，支持访问/刷新令牌轮换和 bcrypt 密码哈希
+- **用户头像** — 上传和显示头像（PNG、JPEG、WebP、GIF）
+- **审计日志** — 跟踪所有用户操作和执行的命令，带风险等级
+- **管理员控制** — 仅管理员可查看审计事件列表；按用户隔离访问
+- **密码管理** — 通过当前密码验证后修改密码
+
+### 部署与运维
+
+- **一键部署** — 单个 shell 脚本完成依赖检查、构建和服务器启动
+- **Docker 支持** — 多阶段构建，持久化卷和自动重启
+- **会话自动清理** — 服务重启时清理过期会话；按可配置超时自动删除过期会话
+- **数据库灵活性** — 默认 SQLite，生产环境支持 PostgreSQL
 
 ## 系统架构
 
@@ -40,7 +89,7 @@
     │  HTTPS / WSS
     ▼
 FastAPI 后端
-    ├── REST API (认证、会话、文件、审计)
+    ├── REST API (认证、会话、文件、设置、审计)
     └── WebSocket 处理器 (二进制协议)
             │
             ▼
@@ -48,7 +97,9 @@ FastAPI 后端
             │
             ├── bash
             ├── zsh (oh-my-zsh)
-            └── fish
+            ├── fish
+            ├── nushell
+            └── sh / dash / ksh / csh / tcsh
 ```
 
 **技术栈**
@@ -56,10 +107,11 @@ FastAPI 后端
 | 层级   | 技术                                           |
 | ------ | ---------------------------------------------- |
 | 前端   | Vue 3 (Composition API)、Pinia、xterm.js v5    |
-| 后端   | FastAPI、SQLAlchemy (async)、aiosqlite         |
-| 终端   | Python PTY (pty.fork)、login shell             |
+| 后端   | FastAPI、SQLAlchemy (async)、aiosqlite / asyncpg |
+| 终端   | Python PTY (`pty.fork`)、login shell           |
 | 数据库 | SQLite (默认)，支持 PostgreSQL                 |
-| 认证   | JWT with RSA、bcrypt 密码哈希                  |
+| 认证   | JWT (HS256)、bcrypt 密码哈希                   |
+| 国际化 | vue-i18n，浏览器语言自动检测                   |
 
 ## 快速开始
 
@@ -117,11 +169,14 @@ docker compose up -d
 | ------------------------------------ | ---------------------------------- | ------------------------------------ |
 | `WEBTTY_SECRET_KEY`                  | 自动生成                           | JWT 签名密钥。**生产环境必须设置。** |
 | `WEBTTY_DATABASE_URL`                | `sqlite+aiosqlite:///./webtty.db`  | 数据库连接字符串                     |
+| `WEBTTY_BROWSE_ROOT`                 | `~`（用户主目录）                  | 文件浏览器根目录                     |
 | `WEBTTY_STATIC_DIR`                  | 自动检测                           | 前端构建输出路径                     |
-| `WEBTTY_UPLOAD_DIR`                  | `./uploads`                        | 上传文件目录                         |
+| `WEBTTY_UPLOAD_DIR`                  | `./uploads`                        | 上传文件和头像目录                   |
 | `WEBTTY_ACCESS_TOKEN_EXPIRE_MINUTES` | `60`                               | JWT 访问令牌有效期                   |
 | `WEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`   | `7`                                | JWT 刷新令牌有效期                   |
 | `WEBTTY_MAX_UPLOAD_SIZE`             | `104857600`                        | 最大上传大小（字节，100MB）          |
+| `WEBTTY_HOST`                        | `0.0.0.0`                          | 服务器绑定地址                       |
+| `WEBTTY_PORT`                        | `8000`                             | 服务器监听端口                       |
 
 ### 生产环境示例
 
@@ -134,7 +189,7 @@ export WEBTTY_DATABASE_URL="sqlite+aiosqlite:////data/webtty.db"
 ## 项目结构
 
 ```text
-web-terminal/
+webtty/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI 应用入口
@@ -143,11 +198,11 @@ web-terminal/
 │   │   ├── models.py            # 数据库模型 (User, Session 等)
 │   │   ├── schemas.py           # Pydantic 请求/响应模型
 │   │   ├── auth/                # 认证模块
-│   │   │   ├── router.py        #   登录、注册、刷新端点
+│   │   │   ├── router.py        #   登录、注册、刷新、头像端点
 │   │   │   ├── service.py       #   JWT 令牌生成和验证
 │   │   │   └── dependencies.py  #   受保护路由的认证依赖
 │   │   ├── session/             # 会话管理模块
-│   │   │   ├── router.py        #   会话 CRUD 端点
+│   │   │   ├── router.py        #   CRUD 端点和 shell 检测
 │   │   │   └── service.py       #   会话生命周期逻辑
 │   │   ├── terminal/            # 终端运行时模块
 │   │   │   ├── host_runtime.py  #   PTY 进程管理 (pty.fork)
@@ -156,7 +211,9 @@ web-terminal/
 │   │   │   ├── ws_handler.py    #   WebSocket 处理器 (二进制协议)
 │   │   │   └── router.py        #   WebSocket 端点注册
 │   │   ├── file/                # 文件管理模块
-│   │   │   └── router.py        #   上传/下载端点
+│   │   │   └── router.py        #   浏览、上传、下载、创建目录、重命名、删除
+│   │   ├── settings/            # 用户设置模块
+│   │   │   └── router.py        #   获取/更新用户偏好
 │   │   └── audit/               # 审计日志模块
 │   │       ├── router.py        #   审计查询端点
 │   │       └── service.py       #   审计事件记录
@@ -168,9 +225,11 @@ web-terminal/
 │   │   ├── router/              # Vue Router 配置
 │   │   ├── stores/              # Pinia 状态管理
 │   │   │   ├── auth.js          #   认证状态和令牌管理
-│   │   │   └── terminal.js      #   会话和标签页状态
-│   │   ├── i18n/                # 国际化配置
-│   │   │   ├── index.js         #   i18n 初始化和语言检测
+│   │   │   ├── terminal.js      #   会话和标签页状态
+│   │   │   ├── theme.js         #   主题模式和强调色
+│   │   │   └── settings.js      #   用户偏好
+│   │   ├── i18n/                # 国际化
+│   │   │   ├── index.js         #   i18n 初始化和浏览器语言检测
 │   │   │   └── locales/         #   语言文件 (en-US, zh-CN, zh-TW, ja)
 │   │   ├── services/
 │   │   │   ├── api.js           #   Axios HTTP 客户端
@@ -178,15 +237,18 @@ web-terminal/
 │   │   ├── components/
 │   │   │   ├── layout/          #   UI 布局组件
 │   │   │   │   ├── StatusBar.vue
-│   │   │   │   ├── SplitPane.vue
-│   │   │   │   └── TerminalToolbar.vue
-│   │   │   └── terminal/        #   终端相关组件
-│   │   │       ├── TerminalPane.vue   # xterm.js 封装
-│   │   │       └── TerminalTabs.vue   # 多标签页 UI
+│   │   │   │   └── SplitPane.vue
+│   │   │   ├── terminal/        #   终端相关组件
+│   │   │   │   ├── TerminalPane.vue   # xterm.js 封装
+│   │   │   │   ├── TerminalTabs.vue   # 多标签页 UI
+│   │   │   │   └── FileBrowser.vue    # 侧边栏文件浏览器
+│   │   │   └── common/
+│   │   │       └── ThemeToggle.vue    # 主题模式切换器
 │   │   ├── views/               # 页面级组件
 │   │   │   ├── LoginView.vue
-│   │   │   ├── SettingsView.vue
-│   │   │   └── TerminalView.vue
+│   │   │   ├── HomeView.vue
+│   │   │   ├── TerminalView.vue
+│   │   │   └── SettingsView.vue
 │   │   └── styles/
 │   │       └── global.css
 │   ├── package.json
@@ -195,9 +257,7 @@ web-terminal/
 ├── docker-compose.yml           # Docker Compose 配置
 ├── deploy.sh                    # 一键部署脚本
 ├── .dockerignore
-├── .gitignore
-├── prd.md                       # 产品需求文档
-└── design.md                    # 技术设计规范
+└── .gitignore
 ```
 
 ## WebSocket 协议
@@ -224,11 +284,15 @@ web-terminal/
 
 ### 认证
 
-| 方法 | 端点                     | 说明                |
-| ---- | ------------------------ | ------------------- |
-| POST | `/api/auth/register`     | 创建新用户账户      |
-| POST | `/api/auth/login`        | 认证并获取 JWT 令牌 |
-| POST | `/api/auth/refresh`      | 刷新访问令牌        |
+| 方法 | 端点                            | 说明                |
+| ---- | ------------------------------- | ------------------- |
+| POST | `/api/auth/register`            | 创建新用户账户      |
+| POST | `/api/auth/login`               | 认证并获取 JWT 令牌 |
+| POST | `/api/auth/refresh`             | 刷新访问令牌        |
+| GET  | `/api/auth/me`                  | 获取当前用户信息    |
+| POST | `/api/auth/change-password`     | 修改账户密码        |
+| POST | `/api/auth/avatar`              | 上传头像            |
+| GET  | `/api/auth/avatar/{filename}`   | 获取头像文件        |
 
 ### 会话
 
@@ -236,6 +300,8 @@ web-terminal/
 | ------ | ------------------------------- | ------------------ |
 | GET    | `/api/sessions`                 | 列出所有会话       |
 | POST   | `/api/sessions`                 | 创建新终端会话     |
+| GET    | `/api/sessions/shells`          | 列出可用 shell     |
+| GET    | `/api/sessions/{id}`            | 获取特定会话       |
 | POST   | `/api/sessions/{id}/reconnect`  | 重新连接到现有会话 |
 | DELETE | `/api/sessions/{id}`            | 删除会话           |
 
@@ -244,6 +310,35 @@ web-terminal/
 | 方法      | 端点                            | 说明                |
 | --------- | ------------------------------- | ------------------- |
 | WebSocket | `/api/terminal/ws/{session_id}` | 终端 WebSocket 连接 |
+
+### 文件
+
+| 方法 | 端点                         | 说明               |
+| ---- | ---------------------------- | ------------------ |
+| GET  | `/api/files/browse`          | 浏览目录内容       |
+| POST | `/api/files/upload-browse`   | 上传文件到目录     |
+| GET  | `/api/files/download-browse` | 下载文件           |
+| POST | `/api/files/mkdir`           | 创建新目录         |
+| POST | `/api/files/rename`          | 重命名文件或目录   |
+| POST | `/api/files/delete`          | 删除文件或目录     |
+| POST | `/api/files/upload`          | 上传文件到会话     |
+| GET  | `/api/files/download`        | 从会话下载文件     |
+| GET  | `/api/files/list`            | 列出会话中的文件   |
+
+### 设置
+
+| 方法 | 端点            | 说明             |
+| ---- | --------------- | ---------------- |
+| GET  | `/api/settings` | 获取用户设置     |
+| PUT  | `/api/settings` | 更新用户设置     |
+
+### 审计
+
+| 方法 | 端点                               | 说明                        |
+| ---- | ---------------------------------- | --------------------------- |
+| GET  | `/api/audit/commands/{session_id}` | 列出会话的命令              |
+| GET  | `/api/audit/events`                | 列出所有审计事件（仅管理员）|
+| GET  | `/api/audit/events/{user_id}`      | 列出用户的审计事件          |
 
 ### 健康检查
 
