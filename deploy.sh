@@ -190,12 +190,28 @@ start_server() {
     source "$VENV_DIR/bin/activate"
 
     # Stop existing instance if running
-    stop_server 2>/dev/null || true
+    stop_server
 
-    # Check port availability
+    # Wait for port to become available
     if ! check_port_available; then
-        err "Port $PORT is already in use. Set WEBTTY_PORT to a different port or stop the other process."
-        exit 1
+        log "Waiting for port $PORT to be released..."
+        for ((i = 1; i <= 10; i++)); do
+            sleep 1
+            if check_port_available; then
+                break
+            fi
+        done
+        if ! check_port_available; then
+            # Last resort: force kill anything on this port
+            if command -v fuser >/dev/null 2>&1; then
+                fuser -k "${PORT}/tcp" 2>/dev/null || true
+                sleep 1
+            fi
+        fi
+        if ! check_port_available; then
+            err "Port $PORT is already in use. Set WEBTTY_PORT to a different port or stop the other process."
+            exit 1
+        fi
     fi
 
     export WEBTTY_STATIC_DIR="$FRONTEND_DIR/dist"
@@ -247,8 +263,11 @@ stop_server() {
         pid=$(get_server_pid)
         log "Stopping server (PID: $pid)..."
 
+        # Kill child processes first (uvicorn workers)
+        pkill -P "$pid" 2>/dev/null || true
+
         # Send SIGTERM first, wait up to 5 seconds
-        kill "$pid"
+        kill "$pid" 2>/dev/null || true
         for ((i = 1; i <= 5; i++)); do
             if ! kill -0 "$pid" 2>/dev/null; then
                 break
@@ -260,7 +279,15 @@ stop_server() {
         if kill -0 "$pid" 2>/dev/null; then
             warn "Server did not stop gracefully, force killing..."
             kill -9 "$pid" 2>/dev/null || true
+            pkill -9 -P "$pid" 2>/dev/null || true
         fi
+
+        # Also kill any remaining processes on the port
+        if command -v fuser >/dev/null 2>&1; then
+            fuser -k "${PORT}/tcp" 2>/dev/null || true
+        fi
+
+        sleep 1
 
         log "Server stopped."
     elif [[ -f "$PID_FILE" ]]; then
