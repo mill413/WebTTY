@@ -1,15 +1,19 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
 import { useThemeStore, mediaQuery } from './stores/theme'
+import { useSettingsStore } from './stores/settings'
 
 const themeStore = useThemeStore()
 themeStore.apply()
+
+const settingsStore = useSettingsStore()
 
 let handler = null
 
 onMounted(() => {
   handler = () => themeStore.onSystemThemeChange()
   mediaQuery.addEventListener('change', handler)
+  settingsStore.fetchSettings()
 })
 
 onUnmounted(() => {

@@ -25,6 +25,12 @@ const routes = [
     name: 'TerminalSession',
     component: () => import('../views/TerminalView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('../views/SettingsView.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

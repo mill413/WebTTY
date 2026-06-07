@@ -8,13 +8,14 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
 # Import models so they're registered with Base.metadata before init_db
-from app.models import User, Session, CommandLog, AuditEvent  # noqa: F401
+from app.models import User, Session, CommandLog, AuditEvent, UserSettings  # noqa: F401
 
 from app.auth.router import router as auth_router
 from app.session.router import router as session_router
 from app.terminal.router import router as terminal_router
 from app.audit.router import router as audit_router
 from app.file.router import router as file_router
+from app.settings.router import router as settings_router
 from app.database import init_db, async_session_factory
 
 logging.basicConfig(level=logging.INFO)
@@ -39,11 +40,72 @@ async def cleanup_stale_sessions():
             logger.info(f"Cleaned up {len(stale)} stale session(s)")
 
 
+async def cleanup_expired_sessions():
+    """Delete sessions that have been stopped/detached for too long based on user settings.
+
+    NOTE: In production, this should run as a periodic background scheduler job.
+    Currently runs once at startup for simplicity.
+    """
+    from sqlalchemy import select
+    from datetime import datetime, timedelta, timezone
+    from app.models import Session, UserSettings
+
+    async with async_session_factory() as db:
+        # Get all user settings with session_timeout > 0
+        result = await db.execute(
+            select(UserSettings).where(UserSettings.session_timeout > 0)
+        )
+        settings_list = result.scalars().all()
+
+        now = datetime.now(timezone.utc)
+        deleted_count = 0
+
+        for user_settings in settings_list:
+            timeout_hours = user_settings.session_timeout
+            cutoff = now - timedelta(hours=timeout_hours)
+
+            result = await db.execute(
+                select(Session).where(
+                    Session.user_id == user_settings.user_id,
+                    Session.status.in_(["stopped", "detached", "error"]),
+                    Session.updated_at < cutoff,
+                )
+            )
+            expired = result.scalars().all()
+            for s in expired:
+                await db.delete(s)
+                deleted_count += 1
+
+        if deleted_count > 0:
+            await db.commit()
+            logger.info(f"Auto-deleted {deleted_count} expired session(s)")
+
+
+async def migrate_db():
+    """Add new columns to existing tables (SQLite does not support ALTER TABLE ADD COLUMN via SQLAlchemy)."""
+    from sqlalchemy import text, inspect as sa_inspect
+    from app.database import engine
+
+    async with engine.begin() as conn:
+        result = await conn.execute(text("PRAGMA table_info(users)"))
+        existing_columns = {row[1] for row in result.fetchall()}
+
+        if "avatar" not in existing_columns:
+            await conn.execute(text("ALTER TABLE users ADD COLUMN avatar VARCHAR(512)"))
+            logger.info("Migration: added 'avatar' column to users")
+
+        if "login_shell" not in existing_columns:
+            await conn.execute(text("ALTER TABLE users ADD COLUMN login_shell VARCHAR(64)"))
+            logger.info("Migration: added 'login_shell' column to users")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing database...")
     await init_db()
+    await migrate_db()
     await cleanup_stale_sessions()
+    await cleanup_expired_sessions()
     logger.info("WebTTY Enterprise started")
     yield
     logger.info("WebTTY Enterprise shutting down")
@@ -69,6 +131,7 @@ app.include_router(session_router)
 app.include_router(terminal_router)
 app.include_router(audit_router)
 app.include_router(file_router)
+app.include_router(settings_router)
 
 
 @app.get("/api/health")

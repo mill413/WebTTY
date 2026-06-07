@@ -23,11 +23,14 @@ class User(Base):
     hashed_password = Column(String(256), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
+    avatar = Column(String(512), nullable=True)  # path to avatar file
+    login_shell = Column(String(64), nullable=True)  # auto-detected login shell
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     command_logs = relationship("CommandLog", back_populates="user", cascade="all, delete-orphan")
     audit_events = relationship("AuditEvent", back_populates="user", cascade="all, delete-orphan")
+    settings = relationship("UserSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 
 class Session(Base):
@@ -81,3 +84,19 @@ class AuditEvent(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     user = relationship("User", back_populates="audit_events")
+
+
+class UserSettings(Base):
+    __tablename__ = "user_settings"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    theme_mode = Column(String(16), default="system", nullable=False)
+    accent_color = Column(String(32), default="#7c3aed", nullable=False)
+    tab_title_format = Column(String(256), default="{shell} #{index}", nullable=False)
+    sidebar_position = Column(String(16), default="right", nullable=False)
+    session_timeout = Column(Integer, default=0, nullable=False)  # 0 = disabled, value in hours
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+    user = relationship("User", back_populates="settings")

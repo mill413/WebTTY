@@ -23,6 +23,8 @@ class UserResponse(BaseModel):
     username: str
     is_active: bool
     is_admin: bool
+    avatar: Optional[str] = None
+    login_shell: Optional[str] = None
     created_at: datetime
 
 
@@ -67,3 +69,28 @@ class CommandLogResponse(BaseModel):
     command: str
     risk_level: str
     created_at: datetime
+
+
+# ---- User Settings ----
+
+class UserSettingsUpdate(BaseModel):
+    theme_mode: Optional[str] = None
+    accent_color: Optional[str] = None
+    tab_title_format: Optional[str] = None
+    sidebar_position: Optional[str] = None
+    session_timeout: Optional[int] = None
+
+
+class UserSettingsResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    theme_mode: str
+    accent_color: str
+    tab_title_format: str
+    sidebar_position: str
+    session_timeout: int
+
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
