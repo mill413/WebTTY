@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTerminalStore } from '../stores/terminal'
 import { useAuthStore } from '../stores/auth'
@@ -8,6 +8,7 @@ import TerminalTabs from '../components/terminal/TerminalTabs.vue'
 import TerminalPane from '../components/terminal/TerminalPane.vue'
 import StatusBar from '../components/layout/StatusBar.vue'
 import FileBrowser from '../components/terminal/FileBrowser.vue'
+import SettingsView from './SettingsView.vue'
 import { useI18n } from 'vue-i18n'
 import ThemeToggle from '../components/common/ThemeToggle.vue'
 
@@ -23,6 +24,8 @@ const terminalDims = ref({ cols: 80, rows: 24 })
 const connectionStatus = ref('disconnected')
 const showFileBrowser = ref(false)
 const showUserMenu = ref(false)
+
+const isSettingsTab = computed(() => terminalStore.activeTab?.type === 'settings')
 
 onMounted(async () => {
   if (!authStore.user) {
@@ -59,7 +62,9 @@ onMounted(async () => {
 })
 
 watch(() => terminalStore.activeTab, (tab) => {
-  if (tab) {
+  if (tab?.type === 'settings') {
+    document.title = 'WebTTY - Settings'
+  } else if (tab) {
     const title = settingsStore.formatTabTitle(
       settingsStore.tabTitleFormat,
       tab.shell,
@@ -115,6 +120,11 @@ function closeFileBrowser() {
   showFileBrowser.value = false
 }
 
+function openSettings() {
+  showUserMenu.value = false
+  terminalStore.openSettingsTab()
+}
+
 function goHome() {
   router.push('/')
 }
@@ -168,7 +178,7 @@ function logout() {
             </svg>
           </button>
           <div v-if="showUserMenu" class="user-dropdown">
-            <button class="dropdown-item" @click="router.push('/settings')">
+            <button class="dropdown-item" @click="openSettings">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
@@ -195,14 +205,21 @@ function logout() {
         @close="closeFileBrowser"
       />
       <div class="terminal-body">
+        <!-- Settings tab content -->
+        <SettingsView
+          v-if="isSettingsTab"
+          :embedded="true"
+        />
+        <!-- Terminal pane -->
         <TerminalPane
-          v-if="terminalStore.activeTab"
+          v-else-if="terminalStore.activeTab"
           ref="terminalPaneRef"
           :sessionId="terminalStore.activeTab.sessionId"
           :key="terminalStore.activeTab.sessionId"
           @resize="handleResize"
           @connection-change="handleConnectionChange"
         />
+        <!-- Empty state -->
         <div v-else class="empty-terminal">
           <div class="empty-content">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon">
@@ -229,6 +246,7 @@ function logout() {
     </div>
 
     <StatusBar
+      v-if="!isSettingsTab"
       :shell="terminalStore.activeTab?.shell || ''"
       :status="terminalStore.activeTab?.status || ''"
       :connectionStatus="connectionStatus"

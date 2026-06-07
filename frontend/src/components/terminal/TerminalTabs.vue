@@ -105,6 +105,10 @@ function selectShell(shell) {
   showShellMenu.value = false
 }
 
+function isSettingsTab(tab) {
+  return tab.type === 'settings'
+}
+
 function getShellIcon(shell) {
     if (!shell) return '>'
     const s = shell.toLowerCase()
@@ -130,19 +134,27 @@ onBeforeUnmount(() => {
         v-for="tab in tabs"
         :key="tab.id"
         class="tab"
-        :class="{ active: tab.id === activeTabId }"
-        draggable="true"
+        :class="{ active: tab.id === activeTabId, 'is-settings': isSettingsTab(tab) }"
+        :draggable="!isSettingsTab(tab)"
         @click="handleClick(tab.id)"
-        @dblclick="handleDblClick(tab.id, tab.title)"
-        @dragstart="handleDragStart(tab.id, $event)"
+        @dblclick="!isSettingsTab(tab) && handleDblClick(tab.id, tab.title)"
+        @dragstart="!isSettingsTab(tab) && handleDragStart(tab.id, $event)"
         @dragover="handleDragOver"
         @drop="handleDrop(tab.id, $event)"
         @dragend="handleDragEnd"
       >
-        <span class="tab-icon">{{ getShellIcon(tab.shell) }}</span>
+        <!-- Settings tab icon -->
+        <span v-if="isSettingsTab(tab)" class="tab-icon tab-icon-settings">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+          </svg>
+        </span>
+        <!-- Shell tab icon -->
+        <span v-else class="tab-icon">{{ getShellIcon(tab.shell) }}</span>
 
         <input
-          v-if="editingTabId === tab.id"
+          v-if="editingTabId === tab.id && !isSettingsTab(tab)"
           v-model="editingTitle"
           class="tab-rename-input"
           @blur="finishRename(tab.id)"
@@ -267,6 +279,12 @@ onBeforeUnmount(() => {
   font-size: 11px;
   color: var(--accent);
   flex-shrink: 0;
+}
+
+.tab-icon-settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tab-title {

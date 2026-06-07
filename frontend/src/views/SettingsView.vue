@@ -7,6 +7,10 @@ import { useThemeStore } from '../stores/theme'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 
+const props = defineProps({
+  embedded: { type: Boolean, default: false }
+})
+
 const { t } = useI18n()
 const router = useRouter()
 const settingsStore = useSettingsStore()
@@ -137,7 +141,7 @@ function logout() {
 
 <template>
   <div class="settings-page">
-    <header class="top-bar">
+    <header v-if="!embedded" class="top-bar">
       <div class="top-bar-left">
         <button class="btn-icon" @click="goBack" :title="t('settings.back')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

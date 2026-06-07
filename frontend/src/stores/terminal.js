@@ -16,7 +16,8 @@ export const useTerminalStore = defineStore('terminal', {
     activeSession: (state) => {
       const tab = state.tabs.find((t) => t.id === state.activeTabId)
       return tab ? tab.sessionId : null
-    }
+    },
+    settingsTab: (state) => state.tabs.find((t) => t.type === 'settings') || null
   },
 
   actions: {
@@ -39,17 +40,43 @@ export const useTerminalStore = defineStore('terminal', {
       return data
     },
 
+    openSettingsTab() {
+      const existing = this.tabs.find((t) => t.type === 'settings')
+      if (existing) {
+        this.activeTabId = existing.id
+        router.push('/terminal')
+        return
+      }
+      const tabId = ++tabIdCounter
+      this.tabs.push({
+        id: tabId,
+        title: 'Settings',
+        sessionId: '__settings__',
+        shell: '',
+        status: '',
+        type: 'settings'
+      })
+      this.activeTabId = tabId
+      router.push('/terminal')
+    },
+
     closeTab(tabId) {
       const idx = this.tabs.findIndex((t) => t.id === tabId)
       if (idx === -1) return
 
+      const closedTab = this.tabs[idx]
       this.tabs.splice(idx, 1)
 
       if (this.activeTabId === tabId) {
         if (this.tabs.length > 0) {
           const newIdx = Math.min(idx, this.tabs.length - 1)
           this.activeTabId = this.tabs[newIdx].id
-          router.push(`/terminal/${this.tabs[newIdx].sessionId}`)
+          const nextTab = this.tabs[newIdx]
+          if (nextTab.type === 'settings') {
+            router.push('/terminal')
+          } else {
+            router.push(`/terminal/${nextTab.sessionId}`)
+          }
         } else {
           this.activeTabId = null
           router.push('/terminal')
@@ -61,7 +88,11 @@ export const useTerminalStore = defineStore('terminal', {
       const tab = this.tabs.find((t) => t.id === tabId)
       if (tab) {
         this.activeTabId = tabId
-        router.push(`/terminal/${tab.sessionId}`)
+        if (tab.type === 'settings') {
+          router.push('/terminal')
+        } else {
+          router.push(`/terminal/${tab.sessionId}`)
+        }
       }
     },
 
