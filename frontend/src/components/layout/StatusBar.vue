@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
+
 const props = defineProps({
   shell: { type: String, default: '' },
   status: { type: String, default: '' },
@@ -6,6 +8,8 @@ const props = defineProps({
   cols: { type: Number, default: 80 },
   rows: { type: Number, default: 24 }
 })
+
+const { t } = useI18n()
 
 function getShellName(shellPath) {
   if (!shellPath) return '--'
@@ -18,7 +22,7 @@ function getShellName(shellPath) {
     <div class="status-left">
       <div class="status-item">
         <span class="status-dot" :class="connectionStatus"></span>
-        <span>{{ connectionStatus === 'connected' ? 'Connected' : 'Disconnected' }}</span>
+        <span>{{ connectionStatus === 'connected' ? t('statusBar.connected') : t('statusBar.disconnected') }}</span>
       </div>
 
       <div class="status-divider"></div>
@@ -97,6 +101,6 @@ function getShellName(shellPath) {
 }
 
 .text-success {
-  color: #a6e3a1;
+  color: var(--success);
 }
 </style>

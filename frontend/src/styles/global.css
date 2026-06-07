@@ -1,4 +1,5 @@
-:root {
+/* Dark theme (Catppuccin Mocha) - default */
+:root, [data-theme="dark"] {
   --bg: #1e1e2e;
   --bg-deep: #181825;
   --fg: #cdd6f4;
@@ -19,6 +20,27 @@
   --radius: 6px;
   --radius-lg: 10px;
   --transition: 150ms ease;
+}
+
+/* Light theme (Catppuccin Latte) */
+[data-theme="light"] {
+  --bg: #eff1f5;
+  --bg-deep: #e6e9ef;
+  --fg: #4c4f69;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --surface: #ccd0da;
+  --surface-hover: #bcc0cc;
+  --overlay: #acb0be;
+  --text: #4c4f69;
+  --subtext: #6c6f85;
+  --border: #9ca0b0;
+  --error: #d20f39;
+  --success: #40a02b;
+  --warning: #df8e1d;
+  --info: #1e66f5;
+  --cursor: #dc8a78;
+  --selection: #9ca0b066;
 }
 
 *,

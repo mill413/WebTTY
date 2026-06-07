@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
+import { useThemeStore } from '../../stores/theme'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const emit = defineEmits(['new-terminal', 'toggle-search', 'toggle-file-browser', 'upload'])
 
 const props = defineProps({
@@ -9,6 +12,8 @@ const props = defineProps({
     default: false
   }
 })
+
+const themeStore = useThemeStore()
 
 const showShellMenu = ref(false)
 const shells = [
@@ -37,7 +42,7 @@ function toggleShellMenu() {
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          New
+          {{ t('toolbar.new') }}
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="6 9 12 15 18 9" />
           </svg>
@@ -56,7 +61,7 @@ function toggleShellMenu() {
 
       <div class="toolbar-divider"></div>
 
-      <button class="toolbar-btn" @click="$emit('toggle-search')" title="Search (Ctrl+Shift+F)">
+      <button class="toolbar-btn" @click="$emit('toggle-search')" :title="t('toolbar.search') + ' (Ctrl+Shift+F)'">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -67,14 +72,14 @@ function toggleShellMenu() {
         class="toolbar-btn"
         :class="{ active: showFileBrowser }"
         @click="$emit('toggle-file-browser')"
-        title="File Browser"
+        :title="t('toolbar.fileBrowser')"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
         </svg>
       </button>
 
-      <button class="toolbar-btn" @click="$emit('upload')" title="Upload File">
+      <button class="toolbar-btn" @click="$emit('upload')" :title="t('toolbar.uploadFile')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />
@@ -84,7 +89,26 @@ function toggleShellMenu() {
     </div>
 
     <div class="toolbar-right">
-      <button class="toolbar-btn" title="Settings" disabled>
+      <button class="toolbar-btn" @click="themeStore.toggle()" :title="themeStore.isDark ? t('toolbar.switchToLight') : t('toolbar.switchToDark')">
+        <!-- Sun icon (shown in dark mode) -->
+        <svg v-if="themeStore.isDark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <!-- Moon icon (shown in light mode) -->
+        <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        </svg>
+      </button>
+
+      <button class="toolbar-btn" :title="t('toolbar.settings')" disabled>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3" />
           <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />

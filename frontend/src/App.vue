@@ -1,4 +1,8 @@
 <script setup>
+import { useThemeStore } from './stores/theme'
+
+const themeStore = useThemeStore()
+themeStore.apply()
 </script>
 
 <template>
