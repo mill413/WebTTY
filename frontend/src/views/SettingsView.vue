@@ -283,10 +283,10 @@ function logout() {
           />
           <div class="format-preview">
             <span class="preview-label">{{ t('settings.tabTitlePreview') }}:</span>
-            <span class="preview-value">{{ tabFormat.replace('{shell}', 'bash').replace('{index}', '1').replace('{title}', '') }}</span>
+            <span class="preview-value">{{ tabFormat.replace('{shell}', 'bash').replace('{index}', '1').replace('{title}', '').replace('{user}', 'admin').replace('{cwd}', '~/projects') }}</span>
           </div>
           <div class="format-hint">
-            <code>{shell}</code> <code>{index}</code> <code>{title}</code>
+            <code>{shell}</code> <code>{index}</code> <code>{title}</code> <code>{user}</code> <code>{cwd}</code>
           </div>
         </div>
       </div>

@@ -33,6 +33,7 @@ export const useTerminalStore = defineStore('terminal', {
         title: title || `${shell.split('/').pop()} #${this.tabs.length + 1}`,
         sessionId: data.id,
         shell: shell,
+        cwd: cwd || data.cwd || '',
         status: 'running'
       })
       this.activeTabId = tabId
@@ -115,7 +116,7 @@ export const useTerminalStore = defineStore('terminal', {
       this.tabs.splice(toIndex, 0, moved)
     },
 
-    addTabForSession(sessionId, title, shell) {
+    addTabForSession(sessionId, title, shell, cwd = '') {
       const existing = this.tabs.find((t) => t.sessionId === sessionId)
       if (existing) {
         this.activeTabId = existing.id
@@ -127,6 +128,7 @@ export const useTerminalStore = defineStore('terminal', {
         title: title || `Session ${sessionId}`,
         sessionId,
         shell: shell || '/bin/bash',
+        cwd,
         status: 'running'
       })
       this.activeTabId = tabId
@@ -149,7 +151,7 @@ export const useTerminalStore = defineStore('terminal', {
 
     async reconnectSession(sessionId) {
       const { data } = await api.post(`/api/sessions/${sessionId}/reconnect`)
-      this.addTabForSession(data.id, data.title, data.shell)
+      this.addTabForSession(data.id, data.title, data.shell, data.cwd || '')
       router.push(`/terminal/${data.id}`)
       return data
     },

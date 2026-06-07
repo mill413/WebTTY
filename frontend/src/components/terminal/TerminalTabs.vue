@@ -1,6 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useSettingsStore } from '../../stores/settings'
+import { useAuthStore } from '../../stores/auth'
+
+const settingsStore = useSettingsStore()
+const authStore = useAuthStore()
 
 const props = defineProps({
   tabs: { type: Array, required: true },
@@ -69,6 +74,19 @@ function isSettingsTab(tab) {
   return tab.type === 'settings'
 }
 
+function getTabDisplayTitle(tab) {
+  if (tab.type === 'settings') return t('settings.title')
+  const index = props.tabs.indexOf(tab) + 1
+  return settingsStore.formatTabTitle(
+    settingsStore.tabTitleFormat,
+    tab.shell,
+    index,
+    tab.title,
+    authStore.username,
+    tab.cwd
+  )
+}
+
 function getShellIcon(shell) {
     if (!shell) return '>'
     const s = shell.toLowerCase()
@@ -114,7 +132,7 @@ function getShellIcon(shell) {
           @click.stop
           autofocus
         />
-        <span v-else class="tab-title truncate">{{ tab.title }}</span>
+        <span v-else class="tab-title truncate">{{ getTabDisplayTitle(tab) }}</span>
 
         <button class="tab-close" @click="handleClose(tab.id, $event)" :title="t('tabs.close')">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">

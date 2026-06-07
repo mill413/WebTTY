@@ -64,11 +64,16 @@ export const useSettingsStore = defineStore('settings', {
       return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')
     },
 
-    formatTabTitle(template, shell, index, title) {
+    formatTabTitle(template, shell, index, title, user = '', cwd = '') {
+      const shortCwd = cwd
+        ? (cwd.length > 20 ? '...' + cwd.slice(-17) : cwd)
+        : '~'
       return template
         .replace('{shell}', shell?.split('/').pop() || 'bash')
         .replace('{index}', index)
         .replace('{title}', title || '')
+        .replace('{user}', user || 'user')
+        .replace('{cwd}', shortCwd)
     }
   }
 })
