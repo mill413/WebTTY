@@ -1,4 +1,6 @@
 import logging
+import os
+import shutil
 
 from datetime import datetime
 
@@ -86,6 +88,90 @@ async def create_session(
     # Refresh to get updated status
     session = await SessionService.get_session(db, session.id)
     return session
+
+
+@router.get("/shells")
+async def list_available_shells(
+    current_user=Depends(get_current_user),
+):
+    """Return list of shells available on the system."""
+
+    SHELL_LABELS = {
+        "bash": ("Bash", "$"),
+        "zsh": ("Zsh", "%"),
+        "fish": ("Fish", ">"),
+        "sh": ("SH", "$"),
+        "dash": ("Dash", "$"),
+        "ksh": ("Ksh", "$"),
+        "csh": ("Csh", "%"),
+        "tcsh": ("Tcsh", "%"),
+        "nu": ("Nushell", ">"),
+    }
+
+    # Shells that are not useful as interactive terminals
+    NON_INTERACTIVE = {
+        "rbash", "rshell", "false", "true", "nologin",
+        "git-shell", "systemd-home-fallback-shell",
+    }
+
+    # Preferred ordering for common shells
+    PREFERENCE = ["bash", "zsh", "fish", "nu", "sh", "dash", "ksh", "csh", "tcsh"]
+
+    # Read /etc/shells for the system's registered shells
+    system_shells = set()
+    try:
+        with open("/etc/shells", "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    system_shells.add(line)
+    except OSError:
+        pass
+
+    # Also check common shell paths via PATH
+    for name in SHELL_LABELS:
+        path = shutil.which(name)
+        if path:
+            system_shells.add(path)
+
+    # Build the result list
+    shells = []
+    seen = set()
+    for shell_path in sorted(system_shells):
+        if shell_path in seen:
+            continue
+        # Verify the shell actually exists and is executable
+        if not os.path.isfile(shell_path) or not os.access(shell_path, os.X_OK):
+            continue
+
+        name = os.path.basename(shell_path)
+        if name in seen or name in NON_INTERACTIVE:
+            continue
+        seen.add(name)
+        seen.add(shell_path)
+
+        label, _ = SHELL_LABELS.get(name, (name.capitalize(), "$"))
+        shells.append({"path": shell_path, "name": name, "label": label})
+
+    # Sort by preference (common interactive shells first)
+    def sort_key(s):
+        try:
+            return PREFERENCE.index(s["name"])
+        except ValueError:
+            return len(PREFERENCE)
+
+    shells.sort(key=sort_key)
+
+    # Ensure at least the user's default shell is listed
+    default_shell = os.environ.get("SHELL", "/bin/sh")
+    if not any(s["path"] == default_shell for s in shells):
+        if os.path.isfile(default_shell) and os.access(default_shell, os.X_OK):
+            name = os.path.basename(default_shell)
+            if name not in NON_INTERACTIVE:
+                label, _ = SHELL_LABELS.get(name, (name.capitalize(), "$"))
+                shells.insert(0, {"path": default_shell, "name": name, "label": label})
+
+    return shells
 
 
 @router.get("/{session_id}", response_model=SessionResponse)

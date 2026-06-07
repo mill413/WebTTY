@@ -10,7 +10,14 @@ import StatusBar from '../components/layout/StatusBar.vue'
 import FileBrowser from '../components/terminal/FileBrowser.vue'
 import SettingsView from './SettingsView.vue'
 import { useI18n } from 'vue-i18n'
+import api from '../services/api'
 import ThemeToggle from '../components/common/ThemeToggle.vue'
+
+import bashIcon from '../assets/shell-icons/gnubash.svg'
+import zshIcon from '../assets/shell-icons/zsh.svg'
+import fishIcon from '../assets/shell-icons/fishshell.svg'
+import nuIcon from '../assets/shell-icons/nushell.svg'
+import terminalIcon from '../assets/shell-icons/terminal.svg'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -25,19 +32,27 @@ const connectionStatus = ref('disconnected')
 const showFileBrowser = ref(false)
 const showUserMenu = ref(false)
 const showShellDialog = ref(false)
-const selectedShell = ref('/bin/bash')
+const selectedShell = ref('')
 const sessionTitle = ref('')
 const sessionCwd = ref('')
 const creating = ref(false)
 
 const isSettingsTab = computed(() => terminalStore.activeTab?.type === 'settings')
 
-const shells = [
-  { value: '/bin/bash', label: 'Bash', icon: '⚡' },
-  { value: '/bin/zsh', label: 'Zsh', icon: '🔷' },
-  { value: '/usr/bin/fish', label: 'Fish', icon: '🐟' },
-  { value: '/bin/sh', label: 'SH', icon: '📟' }
+// Supported shells with icons — only these are shown if available on the system
+const SUPPORTED_SHELLS = [
+  { name: 'bash', icon: bashIcon, label: 'Bash' },
+  { name: 'zsh', icon: zshIcon, label: 'Zsh' },
+  { name: 'fish', icon: fishIcon, label: 'Fish' },
+  { name: 'nu', icon: nuIcon, label: 'Nushell' },
+  { name: 'sh', icon: terminalIcon, label: 'SH' },
+  { name: 'dash', icon: terminalIcon, label: 'Dash' },
+  { name: 'ksh', icon: terminalIcon, label: 'Ksh' },
+  { name: 'csh', icon: terminalIcon, label: 'Csh' },
+  { name: 'tcsh', icon: terminalIcon, label: 'Tcsh' }
 ]
+
+const shells = ref([])
 
 onMounted(async () => {
   if (!authStore.user) {
@@ -49,6 +64,23 @@ onMounted(async () => {
   }
 
   await terminalStore.fetchSessions()
+
+  // Fetch available shells from backend, filter to supported ones
+  try {
+    const { data } = await api.get('/api/sessions/shells')
+    const availableNames = new Set(data.map((s) => s.name))
+    shells.value = SUPPORTED_SHELLS.filter((s) => availableNames.has(s.name)).map((s) => ({
+      value: data.find((d) => d.name === s.name).path,
+      ...s
+    }))
+    if (shells.value.length > 0) {
+      selectedShell.value = shells.value[0].value
+    }
+  } catch {
+    // Fallback if API fails
+    shells.value = [{ value: '/bin/sh', icon: terminalIcon, label: 'SH' }]
+    selectedShell.value = '/bin/sh'
+  }
 
   // Close user menu on outside click
   document.addEventListener('click', () => {
@@ -86,21 +118,27 @@ onMounted(async () => {
   terminalPaneRef.value?.focus()
 })
 
-watch(() => terminalStore.activeTab, (tab) => {
-  if (tab?.type === 'settings') {
-    document.title = 'WebTTY - Settings'
-  } else if (tab) {
-    const title = settingsStore.formatTabTitle(
-      settingsStore.tabTitleFormat,
-      tab.shell,
-      terminalStore.tabs.indexOf(tab) + 1,
-      tab.title
-    )
-    document.title = `WebTTY - ${title}`
-  } else {
-    document.title = 'WebTTY'
-  }
-}, { immediate: true })
+watch(
+  [() => terminalStore.activeTab, () => settingsStore.tabTitleFormat],
+  ([tab]) => {
+    if (tab?.type === 'settings') {
+      document.title = 'WebTTY - Settings'
+    } else if (tab) {
+      const title = settingsStore.formatTabTitle(
+        settingsStore.tabTitleFormat,
+        tab.shell,
+        terminalStore.tabs.indexOf(tab) + 1,
+        tab.title,
+        authStore.username,
+        tab.cwd
+      )
+      document.title = `WebTTY - ${title}`
+    } else {
+      document.title = 'WebTTY'
+    }
+  },
+  { immediate: true }
+)
 
 watch(() => route.params.sessionId, (newId) => {
   if (newId) {
@@ -370,7 +408,7 @@ function logout() {
                 :class="{ active: selectedShell === shell.value }"
                 @click="selectedShell = shell.value"
               >
-                <span class="shell-icon">{{ shell.icon }}</span>
+                <img class="shell-icon" :src="shell.icon" :alt="shell.label" />
                 <span>{{ shell.label }}</span>
               </button>
             </div>
@@ -742,7 +780,7 @@ function logout() {
 
 .shell-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 8px;
 }
 
@@ -771,7 +809,9 @@ function logout() {
 }
 
 .shell-icon {
-  font-size: 20px;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .dialog-actions {
