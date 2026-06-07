@@ -1,7 +1,10 @@
 import logging
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
 # Import models so they're registered with Base.metadata before init_db
@@ -71,3 +74,28 @@ app.include_router(file_router)
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "version": "1.0.0"}
+
+
+# Serve frontend static files in production mode.
+from app.config import settings as app_settings
+
+STATIC_DIR = Path(app_settings.STATIC_DIR) if app_settings.STATIC_DIR else None
+if STATIC_DIR is None or not STATIC_DIR.is_dir():
+    # Auto-detect: relative path from backend/ or Docker path
+    STATIC_DIR = Path(__file__).resolve().parent.parent / ".." / "frontend" / "dist"
+if not STATIC_DIR.is_dir():
+    STATIC_DIR = Path("/app/frontend/dist")
+
+if STATIC_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="static-assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(request: Request, full_path: str):
+        # Try to serve the exact static file first
+        file_path = STATIC_DIR / full_path
+        if file_path.is_file():
+            return FileResponse(file_path)
+        # Fall back to index.html for SPA client-side routing
+        return FileResponse(STATIC_DIR / "index.html")
+
+    logger.info(f"Serving frontend from {STATIC_DIR}")
