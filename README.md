@@ -198,6 +198,41 @@ sudo journalctl -u webtty -f     # View logs
 sudo ./install.sh --uninstall
 ```
 
+### Arch Linux (AUR)
+
+Install WebTTY as a native Arch Linux package using pacman.
+
+**From GitHub Release:**
+
+```bash
+# Download the pre-built package
+wget https://github.com/anthropics/webtty/releases/download/v1.0.0/webtty-1.0.0-1-x86_64.pkg.tar.zst
+
+# Install
+sudo pacman -U webtty-1.0.0-1-x86_64.pkg.tar.zst
+
+# Enable and start the service
+sudo systemctl enable --now webtty
+```
+
+**Using AUR helpers (after publishing to AUR):**
+
+```bash
+yay -S webtty
+# or
+paru -S webtty
+```
+
+The package installs the executable to `/usr/bin/webtty` and the systemd service to `/usr/lib/systemd/system/`. Configuration is auto-generated at `/etc/webtty/webtty.env` on first install.
+
+```bash
+# Uninstall (keeps config and data)
+sudo pacman -R webtty
+
+# Full removal
+sudo pacman -Rn webtty && sudo rm -rf /var/lib/webtty /etc/webtty
+```
+
 ## Configuration
 
 All settings are configured via environment variables (prefix: `WEBTTY_`):
@@ -293,6 +328,16 @@ webtty/
 ├── build.sh                     # Build standalone executable (PyInstaller)
 ├── install.sh                   # Install/uninstall systemd service
 ├── webtty.service               # systemd unit file
+├── pkg/
+│   ├── deb/                     # Debian package files
+│   │   ├── DEBIAN/              #   DEBIAN metadata (control, postinst, etc.)
+│   │   ├── build-deb.sh         #   Local deb build script
+│   │   └── README.md
+│   └── aur/                     # Arch Linux (AUR) package files
+│       ├── PKGBUILD             #   Package build script template
+│       ├── webtty.install       #   pacman install hooks
+│       ├── build-aur.sh         #   Local AUR build script
+│       └── README.md
 ├── Dockerfile                   # Multi-stage Docker build
 ├── docker-compose.yml           # Docker Compose configuration
 ├── deploy.sh                    # One-click deployment script
