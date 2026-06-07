@@ -6,6 +6,10 @@
 #   ./deploy.sh              # Build and start
 #   ./deploy.sh --docker     # Build and start via Docker
 #   ./deploy.sh --stop       # Stop the running server
+#   ./deploy.sh --restart    # Restart the server
+#   ./deploy.sh --status     # Check server status
+#   ./deploy.sh --logs       # Tail server logs
+#   ./deploy.sh --update     # Pull latest code and redeploy
 #
 set -euo pipefail
 
@@ -14,32 +18,141 @@ BACKEND_DIR="$SCRIPT_DIR/backend"
 FRONTEND_DIR="$SCRIPT_DIR/frontend"
 VENV_DIR="$BACKEND_DIR/venv"
 DATA_DIR="$BACKEND_DIR/data"
+ENV_FILE="$SCRIPT_DIR/.env"
+PID_FILE="$SCRIPT_DIR/.webtty.pid"
+LOG_FILE="$SCRIPT_DIR/webtty.log"
+
+# Load .env file if exists
+if [[ -f "$ENV_FILE" ]]; then
+    set -a
+    # shellcheck source=/dev/null
+    source "$ENV_FILE"
+    set +a
+fi
+
 HOST="${WEBTTY_HOST:-0.0.0.0}"
 PORT="${WEBTTY_PORT:-8000}"
-PID_FILE="$SCRIPT_DIR/.webtty.pid"
+
+# Required minimum versions
+MIN_PYTHON_MAJOR=3
+MIN_PYTHON_MINOR=12
+MIN_NODE_MAJOR=18
 
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
+DIM='\033[2m'
 NC='\033[0m'
 
 log()  { echo -e "${GREEN}[WebTTY]${NC} $*"; }
 warn() { echo -e "${YELLOW}[WebTTY]${NC} $*"; }
 err()  { echo -e "${RED}[WebTTY]${NC} $*" >&2; }
+dim()  { echo -e "${DIM}$*${NC}"; }
+
+# ── Helpers ──────────────────────────────────────────────────────
+
+is_server_running() {
+    if [[ -f "$PID_FILE" ]]; then
+        local pid
+        pid=$(cat "$PID_FILE")
+        if kill -0 "$pid" 2>/dev/null; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+get_server_pid() {
+    if [[ -f "$PID_FILE" ]]; then
+        cat "$PID_FILE"
+    else
+        echo ""
+    fi
+}
+
+wait_for_health() {
+    local max_wait=${1:-15}
+    local url="http://localhost:$PORT/api/health"
+    for ((i = 1; i <= max_wait; i++)); do
+        if curl -sf "$url" >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 1
+    done
+    return 1
+}
+
+check_port_available() {
+    if command -v ss >/dev/null 2>&1; then
+        if ss -tlnp 2>/dev/null | grep -q ":${PORT} "; then
+            return 1
+        fi
+    elif command -v lsof >/dev/null 2>&1; then
+        if lsof -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+            return 1
+        fi
+    elif command -v netstat >/dev/null 2>&1; then
+        if netstat -tlnp 2>/dev/null | grep -q ":${PORT} "; then
+            return 1
+        fi
+    fi
+    return 0
+}
+
+ensure_env_secret() {
+    # Persist a generated secret key to .env so it survives restarts
+    if [[ -z "${WEBTTY_SECRET_KEY:-}" ]]; then
+        local key
+        key=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+        mkdir -p "$(dirname "$ENV_FILE")"
+        if [[ -f "$ENV_FILE" ]]; then
+            echo "" >> "$ENV_FILE"
+        fi
+        echo "# Auto-generated JWT secret (remove to regenerate)" >> "$ENV_FILE"
+        echo "WEBTTY_SECRET_KEY=$key" >> "$ENV_FILE"
+        export WEBTTY_SECRET_KEY="$key"
+        log "Generated and persisted secret key to .env"
+    fi
+}
+
+# ── Commands ─────────────────────────────────────────────────────
 
 check_deps() {
     local missing=()
     command -v python3 >/dev/null 2>&1 || missing+=(python3)
     command -v node    >/dev/null 2>&1 || missing+=(node)
     command -v npm     >/dev/null 2>&1 || missing+=(npm)
+    command -v curl    >/dev/null 2>&1 || missing+=(curl)
     if [[ ${#missing[@]} -gt 0 ]]; then
         err "Missing required tools: ${missing[*]}"
         err "Please install them and try again."
         exit 1
     fi
-    log "Dependencies check passed (python3, node, npm)"
+
+    # Check Python version
+    local py_version
+    py_version=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+    local py_major py_minor
+    py_major=$(echo "$py_version" | cut -d. -f1)
+    py_minor=$(echo "$py_version" | cut -d. -f2)
+    if (( py_major < MIN_PYTHON_MAJOR || (py_major == MIN_PYTHON_MAJOR && py_minor < MIN_PYTHON_MINOR) )); then
+        err "Python ${MIN_PYTHON_MAJOR}.${MIN_PYTHON_MINOR}+ required, found $py_version"
+        exit 1
+    fi
+
+    # Check Node.js version
+    local node_version
+    node_version=$(node -v | sed 's/^v//')
+    local node_major
+    node_major=$(echo "$node_version" | cut -d. -f1)
+    if (( node_major < MIN_NODE_MAJOR )); then
+        err "Node.js ${MIN_NODE_MAJOR}+ required, found v$node_version"
+        exit 1
+    fi
+
+    log "Dependencies check passed (Python $py_version, Node.js v$node_version)"
 }
 
 build_frontend() {
@@ -62,8 +175,10 @@ setup_backend() {
         python3 -m venv "$VENV_DIR"
     fi
 
+    # shellcheck source=/dev/null
     source "$VENV_DIR/bin/activate"
     log "Installing Python dependencies..."
+    pip install -q --upgrade pip
     pip install -q -r requirements.txt
 
     mkdir -p "$DATA_DIR" "$BACKEND_DIR/uploads"
@@ -71,56 +186,153 @@ setup_backend() {
 
 start_server() {
     cd "$BACKEND_DIR"
+    # shellcheck source=/dev/null
     source "$VENV_DIR/bin/activate"
 
     # Stop existing instance if running
     stop_server 2>/dev/null || true
 
+    # Check port availability
+    if ! check_port_available; then
+        err "Port $PORT is already in use. Set WEBTTY_PORT to a different port or stop the other process."
+        exit 1
+    fi
+
     export WEBTTY_STATIC_DIR="$FRONTEND_DIR/dist"
     export WEBTTY_DATABASE_URL="${WEBTTY_DATABASE_URL:-sqlite+aiosqlite:///$DATA_DIR/webtty.db}"
-    export WEBTTY_SECRET_KEY="${WEBTTY_SECRET_KEY:-$(python3 -c 'import secrets; print(secrets.token_hex(32))')}"
+    ensure_env_secret
 
     log "Starting WebTTY server on $HOST:$PORT..."
-    log "  Frontend: $WEBTTY_STATIC_DIR"
-    log "  Database: $WEBTTY_DATABASE_URL"
+    dim "  Frontend: $WEBTTY_STATIC_DIR"
+    dim "  Database: $WEBTTY_DATABASE_URL"
 
     nohup python3 -m uvicorn app.main:app \
         --host "$HOST" \
         --port "$PORT" \
-        > "$SCRIPT_DIR/webtty.log" 2>&1 &
+        >> "$LOG_FILE" 2>&1 &
 
     echo $! > "$PID_FILE"
-    sleep 2
 
-    if kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-        log "Server started (PID: $(cat "$PID_FILE"))"
+    # Wait for server to become healthy
+    log "Waiting for server to start..."
+    if wait_for_health 15; then
+        local pid
+        pid=$(cat "$PID_FILE")
         echo ""
         echo -e "${CYAN}========================================${NC}"
         echo -e "${CYAN}  WebTTY is running!${NC}"
-        echo -e "${CYAN}  Open: http://localhost:$PORT${NC}"
-        echo -e "${CYAN}  Log:  $SCRIPT_DIR/webtty.log${NC}"
-        echo -e "${CYAN}  Stop: ./deploy.sh --stop${NC}"
+        echo -e "${CYAN}  Open:   http://localhost:$PORT${NC}"
+        echo -e "${CYAN}  PID:    $pid${NC}"
+        echo -e "${CYAN}  Log:    $LOG_FILE${NC}"
+        echo -e "${CYAN}  Stop:   ./deploy.sh --stop${NC}"
+        echo -e "${CYAN}  Status: ./deploy.sh --status${NC}"
         echo -e "${CYAN}========================================${NC}"
     else
-        err "Server failed to start. Check log:"
-        tail -20 "$SCRIPT_DIR/webtty.log"
-        exit 1
+        # Server might have crashed
+        if is_server_running; then
+            warn "Server started but health check timed out."
+            warn "Check logs: ./deploy.sh --logs"
+        else
+            err "Server failed to start. Last log output:"
+            tail -20 "$LOG_FILE"
+            rm -f "$PID_FILE"
+            exit 1
+        fi
     fi
 }
 
 stop_server() {
-    if [[ -f "$PID_FILE" ]]; then
+    if is_server_running; then
         local pid
-        pid=$(cat "$PID_FILE")
-        if kill -0 "$pid" 2>/dev/null; then
-            log "Stopping server (PID: $pid)..."
-            kill "$pid"
+        pid=$(get_server_pid)
+        log "Stopping server (PID: $pid)..."
+
+        # Send SIGTERM first, wait up to 5 seconds
+        kill "$pid"
+        for ((i = 1; i <= 5; i++)); do
+            if ! kill -0 "$pid" 2>/dev/null; then
+                break
+            fi
             sleep 1
+        done
+
+        # Force kill if still running
+        if kill -0 "$pid" 2>/dev/null; then
+            warn "Server did not stop gracefully, force killing..."
             kill -9 "$pid" 2>/dev/null || true
-            log "Server stopped."
         fi
-        rm -f "$PID_FILE"
+
+        log "Server stopped."
+    elif [[ -f "$PID_FILE" ]]; then
+        warn "Server was not running (stale PID file removed)."
+    else
+        warn "Server is not running."
     fi
+    rm -f "$PID_FILE"
+}
+
+show_status() {
+    if is_server_running; then
+        local pid
+        pid=$(get_server_pid)
+        echo -e "${GREEN}●${NC} WebTTY is running"
+        echo -e "  PID:    $pid"
+        echo -e "  URL:    http://localhost:$PORT"
+        echo -e "  Log:    $LOG_FILE"
+
+        # Check health endpoint
+        if curl -sf "http://localhost:$PORT/api/health" >/dev/null 2>&1; then
+            echo -e "  Health: ${GREEN}healthy${NC}"
+        else
+            echo -e "  Health: ${YELLOW}unreachable${NC}"
+        fi
+    else
+        echo -e "${RED}●${NC} WebTTY is not running"
+        if [[ -f "$PID_FILE" ]]; then
+            warn "Stale PID file found. Run ./deploy.sh --stop to clean up."
+        fi
+    fi
+}
+
+show_logs() {
+    if [[ ! -f "$LOG_FILE" ]]; then
+        warn "No log file found at $LOG_FILE"
+        exit 1
+    fi
+    log "Tailing logs (Ctrl+C to exit)..."
+    tail -f "$LOG_FILE"
+}
+
+restart_server() {
+    stop_server
+    start_server
+}
+
+update_and_redeploy() {
+    log "Updating WebTTY..."
+
+    # Check if we're in a git repo
+    if ! command -v git >/dev/null 2>&1; then
+        err "git is required for --update."
+        exit 1
+    fi
+    if [[ ! -d "$SCRIPT_DIR/.git" ]]; then
+        err "Not a git repository. Cannot update."
+        exit 1
+    fi
+
+    cd "$SCRIPT_DIR"
+    log "Pulling latest changes..."
+    git pull --ff-only || {
+        err "git pull failed. Resolve conflicts and try again."
+        exit 1
+    }
+
+    log "Rebuilding and restarting..."
+    check_deps
+    build_frontend
+    setup_backend
+    start_server
 }
 
 docker_deploy() {
@@ -134,32 +346,76 @@ docker_deploy() {
     log "Docker containers started."
     echo ""
     echo -e "${CYAN}========================================${NC}"
-    echo -e "${CYAN}  WebTTY is running!${NC}"
-    echo -e "${CYAN}  Open: http://localhost:8000${NC}"
-    echo -e "${CYAN}  Stop: docker compose down${NC}"
-    echo -e "${CYAN}  Logs: docker compose logs -f${NC}"
+    echo -e "${CYAN}  WebTTY is running (Docker)!${NC}"
+    echo -e "${CYAN}  Open:   http://localhost:8000${NC}"
+    echo -e "${CYAN}  Stop:   ./deploy.sh --docker-stop${NC}"
+    echo -e "${CYAN}  Logs:   docker compose logs -f${NC}"
     echo -e "${CYAN}========================================${NC}"
 }
 
-# Main
+docker_stop() {
+    log "Stopping Docker containers..."
+    cd "$SCRIPT_DIR"
+    docker compose down
+    log "Docker containers stopped."
+}
+
+print_help() {
+    echo "WebTTY - Self-hosted web terminal"
+    echo ""
+    echo "Usage: ./deploy.sh [command]"
+    echo ""
+    echo "Commands:"
+    echo "  (none)         Build frontend + start backend server"
+    echo "  --docker       Deploy via Docker Compose"
+    echo "  --docker-stop  Stop Docker containers"
+    echo "  --stop         Stop the running server"
+    echo "  --restart      Restart the server"
+    echo "  --status       Check if the server is running"
+    echo "  --logs         Tail server logs"
+    echo "  --update       Pull latest code and redeploy"
+    echo "  --help, -h     Show this help message"
+    echo ""
+    echo "Environment variables (or .env file):"
+    echo "  WEBTTY_HOST              Bind address          (default: 0.0.0.0)"
+    echo "  WEBTTY_PORT              Listen port            (default: 8000)"
+    echo "  WEBTTY_SECRET_KEY        JWT secret             (default: auto-generated)"
+    echo "  WEBTTY_DATABASE_URL      Database URL           (default: SQLite in data/)"
+    echo "  WEBTTY_UPLOAD_DIR        Upload directory       (default: ./uploads)"
+    echo "  WEBTTY_MAX_UPLOAD_SIZE   Max upload size bytes  (default: 104857600)"
+    echo ""
+    echo "Examples:"
+    echo "  ./deploy.sh                        # Quick start"
+    echo "  WEBTTY_PORT=3000 ./deploy.sh       # Start on port 3000"
+    echo "  ./deploy.sh --status               # Check server status"
+}
+
+# ── Main ─────────────────────────────────────────────────────────
+
 case "${1:-}" in
     --docker)
         docker_deploy
         ;;
+    --docker-stop)
+        docker_stop
+        ;;
     --stop)
         stop_server
         ;;
+    --restart)
+        restart_server
+        ;;
+    --status)
+        show_status
+        ;;
+    --logs)
+        show_logs
+        ;;
+    --update)
+        update_and_redeploy
+        ;;
     --help|-h)
-        echo "Usage:"
-        echo "  ./deploy.sh              Build frontend + start backend server"
-        echo "  ./deploy.sh --docker     Deploy via Docker Compose"
-        echo "  ./deploy.sh --stop       Stop the running server"
-        echo ""
-        echo "Environment variables:"
-        echo "  WEBTTY_HOST          Bind address (default: 0.0.0.0)"
-        echo "  WEBTTY_PORT          Listen port  (default: 8000)"
-        echo "  WEBTTY_SECRET_KEY    JWT secret   (default: auto-generated)"
-        echo "  WEBTTY_DATABASE_URL  Database URL (default: SQLite in data/)"
+        print_help
         ;;
     *)
         check_deps

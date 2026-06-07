@@ -91,10 +91,14 @@ Open `http://localhost:8000` and register your first account.
 
 This will automatically install dependencies, build the frontend and start the server on port 8000.
 
-Stop the server:
-
 ```bash
-./deploy.sh --stop
+./deploy.sh --status     # Check server status
+./deploy.sh --stop       # Stop the server
+./deploy.sh --restart    # Restart the server
+./deploy.sh --logs       # Tail server logs
+./deploy.sh --update     # Pull latest code and redeploy
+./deploy.sh --docker     # Deploy via Docker Compose
+./deploy.sh --help       # Show all commands
 ```
 
 ### Docker

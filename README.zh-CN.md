@@ -91,10 +91,14 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 这会自动安装依赖、构建前端并在端口 8000 启动服务器。
 
-停止服务器：
-
 ```bash
-./deploy.sh --stop
+./deploy.sh --status     # 查看服务器状态
+./deploy.sh --stop       # 停止服务器
+./deploy.sh --restart    # 重启服务器
+./deploy.sh --logs       # 查看日志
+./deploy.sh --update     # 拉取最新代码并重新部署
+./deploy.sh --docker     # 通过 Docker Compose 部署
+./deploy.sh --help       # 查看所有命令
 ```
 
 ### Docker
