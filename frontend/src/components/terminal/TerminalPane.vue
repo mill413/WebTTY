@@ -22,6 +22,7 @@ let fitAddon = null
 let searchAddon = null
 let wsConnection = null
 let resizeObserver = null
+let copyOnSelectHandler = null
 
 onMounted(() => {
   initTerminal()
@@ -76,6 +77,20 @@ function initTerminal() {
 
   terminal.open(terminalEl.value)
 
+  // Copy-on-select: copy selected text to clipboard when user finishes a selection
+  copyOnSelectHandler = () => {
+    const selection = terminal.getSelection()
+    if (selection) {
+      navigator.clipboard.writeText(selection).catch(() => {
+        // Clipboard API may fail in insecure contexts; silently ignore
+      })
+    }
+  }
+  terminalEl.value.addEventListener('mouseup', copyOnSelectHandler)
+  terminalEl.value.addEventListener('keyup', (e) => {
+    if (e.shiftKey) copyOnSelectHandler()
+  })
+
   // Initial fit
   requestAnimationFrame(() => {
     fitAddon.fit()
@@ -116,6 +131,10 @@ function initTerminal() {
 }
 
 function cleanup() {
+  if (copyOnSelectHandler && terminalEl.value) {
+    terminalEl.value.removeEventListener('mouseup', copyOnSelectHandler)
+    copyOnSelectHandler = null
+  }
   if (resizeObserver) {
     resizeObserver.disconnect()
     resizeObserver = null
