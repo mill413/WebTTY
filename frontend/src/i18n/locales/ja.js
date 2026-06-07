@@ -137,6 +137,8 @@ export default {
     statusItemConnection: '接続状態',
     statusItemShell: 'Shell タイプ',
     statusItemStatus: 'プロセス状態',
+    statusPositionLeft: '左側',
+    statusPositionRight: '右側',
     sessionTimeout: 'セッション自動削除',
     sessionTimeoutDesc: '停止したセッションを指定時間後に自動削除',
     timeoutDisabled: '無効',

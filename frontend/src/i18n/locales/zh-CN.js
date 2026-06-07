@@ -137,6 +137,8 @@ export default {
     statusItemConnection: '连接状态',
     statusItemShell: 'Shell 类型',
     statusItemStatus: '进程状态',
+    statusPositionLeft: '左侧',
+    statusPositionRight: '右侧',
     sessionTimeout: '会话自动删除',
     sessionTimeoutDesc: '在指定时间后自动删除已停止的会话',
     timeoutDisabled: '关闭',

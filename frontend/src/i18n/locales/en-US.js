@@ -137,6 +137,8 @@ export default {
     statusItemConnection: 'Connection Status',
     statusItemShell: 'Shell Type',
     statusItemStatus: 'Process Status',
+    statusPositionLeft: 'Left',
+    statusPositionRight: 'Right',
     sessionTimeout: 'Session Auto-Delete',
     sessionTimeoutDesc: 'Automatically delete stopped sessions after a period of time',
     timeoutDisabled: 'Disabled',

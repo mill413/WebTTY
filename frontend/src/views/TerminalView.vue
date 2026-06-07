@@ -388,7 +388,8 @@ function logout() {
       :shell="terminalStore.activeTab?.shell || ''"
       :status="terminalStore.activeTab?.status || ''"
       :connectionStatus="connectionStatus"
-      :items="settingsStore.statusBarItems"
+      :leftItems="settingsStore.statusBarLeftItems"
+      :rightItems="settingsStore.statusBarRightItems"
     />
 
     <!-- Shell selector dialog -->

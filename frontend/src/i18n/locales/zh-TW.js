@@ -137,6 +137,8 @@ export default {
     statusItemConnection: '連線狀態',
     statusItemShell: 'Shell 類型',
     statusItemStatus: '程序狀態',
+    statusPositionLeft: '左側',
+    statusPositionRight: '右側',
     sessionTimeout: '工作階段自動刪除',
     sessionTimeoutDesc: '在指定時間後自動刪除已停止的工作階段',
     timeoutDisabled: '關閉',

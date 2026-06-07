@@ -9,12 +9,16 @@ export const useSettingsStore = defineStore('settings', {
     sidebarPosition: 'right',
     sessionTimeout: 0,
     statusBarVisible: localStorage.getItem('webtty-statusbar-visible') !== 'false',
-    statusBarItems: JSON.parse(localStorage.getItem('webtty-statusbar-items') || '{"connection":true,"shell":false,"status":false}'),
+    statusBarItems: JSON.parse(localStorage.getItem('webtty-statusbar-items') || '[{"key":"shell","visible":false,"position":"left","order":0},{"key":"status","visible":false,"position":"left","order":1},{"key":"connection","visible":true,"position":"right","order":0}]'),
     loaded: false
   }),
 
   getters: {
-    sidebarOnLeft: (state) => state.sidebarPosition === 'left'
+    sidebarOnLeft: (state) => state.sidebarPosition === 'left',
+    statusBarLeftItems: (state) =>
+      state.statusBarItems.filter((i) => i.visible && i.position === 'left').sort((a, b) => a.order - b.order),
+    statusBarRightItems: (state) =>
+      state.statusBarItems.filter((i) => i.visible && i.position === 'right').sort((a, b) => a.order - b.order)
   },
 
   actions: {
@@ -71,8 +75,44 @@ export const useSettingsStore = defineStore('settings', {
       localStorage.setItem('webtty-statusbar-visible', visible)
     },
 
-    toggleStatusBarItem(key, value) {
-      this.statusBarItems[key] = value
+    toggleStatusBarItemVisible(key, visible) {
+      const item = this.statusBarItems.find((i) => i.key === key)
+      if (item) {
+        item.visible = visible
+        this.saveStatusBarItems()
+      }
+    },
+
+    updateStatusBarItemPosition(key, position) {
+      const item = this.statusBarItems.find((i) => i.key === key)
+      if (item) {
+        item.position = position
+        // Reorder: put at the end of the new position
+        const itemsInPosition = this.statusBarItems
+          .filter((i) => i.position === position)
+          .sort((a, b) => a.order - b.order)
+        item.order = itemsInPosition.length > 1 ? itemsInPosition[itemsInPosition.length - 1].order + 1 : 0
+        this.saveStatusBarItems()
+      }
+    },
+
+    reorderStatusBarItems(fromIndex, toIndex) {
+      const [moved] = this.statusBarItems.splice(fromIndex, 1)
+      this.statusBarItems.splice(toIndex, 0, moved)
+      // Recalculate order within each position
+      let leftOrder = 0
+      let rightOrder = 0
+      for (const item of this.statusBarItems) {
+        if (item.position === 'left') {
+          item.order = leftOrder++
+        } else {
+          item.order = rightOrder++
+        }
+      }
+      this.saveStatusBarItems()
+    },
+
+    saveStatusBarItems() {
       localStorage.setItem('webtty-statusbar-items', JSON.stringify(this.statusBarItems))
     },
 

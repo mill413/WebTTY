@@ -312,19 +312,17 @@ function logout() {
           <p>{{ t('settings.statusBarItemsDesc') }}</p>
         </div>
         <div class="setting-control-full">
-          <div class="checkbox-group">
-            <label class="checkbox-label">
-              <input type="checkbox" :checked="settingsStore.statusBarItems.connection" @change="settingsStore.toggleStatusBarItem('connection', $event.target.checked)" />
-              <span>{{ t('settings.statusItemConnection') }}</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" :checked="settingsStore.statusBarItems.shell" @change="settingsStore.toggleStatusBarItem('shell', $event.target.checked)" />
-              <span>{{ t('settings.statusItemShell') }}</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" :checked="settingsStore.statusBarItems.status" @change="settingsStore.toggleStatusBarItem('status', $event.target.checked)" />
-              <span>{{ t('settings.statusItemStatus') }}</span>
-            </label>
+          <div class="statusbar-items-list">
+            <div v-for="item in settingsStore.statusBarItems" :key="item.key" class="statusbar-item-row">
+              <label class="checkbox-label">
+                <input type="checkbox" :checked="item.visible" @change="settingsStore.toggleStatusBarItemVisible(item.key, $event.target.checked)" />
+                <span>{{ t('settings.statusItem' + item.key.charAt(0).toUpperCase() + item.key.slice(1)) }}</span>
+              </label>
+              <select class="position-select" :value="item.position" @change="settingsStore.updateStatusBarItemPosition(item.key, $event.target.value)" :disabled="!item.visible">
+                <option value="left">{{ t('settings.statusPositionLeft') }}</option>
+                <option value="right">{{ t('settings.statusPositionRight') }}</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -986,5 +984,37 @@ function logout() {
   height: 16px;
   accent-color: var(--accent);
   cursor: pointer;
+}
+
+/* Status bar items list */
+.statusbar-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statusbar-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.position-select {
+  padding: 4px 8px;
+  font-size: 12px;
+  background: var(--surface-hover);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.position-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

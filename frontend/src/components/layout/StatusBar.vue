@@ -5,7 +5,8 @@ const props = defineProps({
   shell: { type: String, default: '' },
   status: { type: String, default: '' },
   connectionStatus: { type: String, default: 'disconnected' },
-  items: { type: Object, default: () => ({ connection: true, shell: false, status: false }) }
+  leftItems: { type: Array, default: () => [] },
+  rightItems: { type: Array, default: () => [] }
 })
 
 const { t } = useI18n()
@@ -14,32 +15,56 @@ function getShellName(shellPath) {
   if (!shellPath) return '--'
   return shellPath.split('/').pop()
 }
+
+function renderStatus(status) {
+  return status || '--'
+}
 </script>
 
 <template>
   <div class="status-bar">
     <div class="status-left">
-      <template v-if="items.shell">
+      <template v-for="(item, index) in leftItems" :key="item.key">
+        <div v-if="index > 0" class="status-divider"></div>
         <div class="status-item">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="4 17 10 11 4 5" />
-            <line x1="12" y1="19" x2="20" y2="19" />
-          </svg>
-          <span>{{ getShellName(shell) }}</span>
+          <template v-if="item.key === 'shell'">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5" />
+              <line x1="12" y1="19" x2="20" y2="19" />
+            </svg>
+            <span>{{ getShellName(shell) }}</span>
+          </template>
+          <template v-else-if="item.key === 'status'">
+            <span :class="{ 'text-success': status === 'running' }">{{ renderStatus(status) }}</span>
+          </template>
+          <template v-else-if="item.key === 'connection'">
+            <span class="status-dot" :class="connectionStatus"></span>
+            <span>{{ connectionStatus === 'connected' ? t('statusBar.connected') : t('statusBar.disconnected') }}</span>
+          </template>
         </div>
-        <div class="status-divider"></div>
       </template>
-
-      <div class="status-item" v-if="items.status && status">
-        <span :class="{ 'text-success': status === 'running' }">{{ status }}</span>
-      </div>
     </div>
 
     <div class="status-right">
-      <div class="status-item" v-if="items.connection">
-        <span class="status-dot" :class="connectionStatus"></span>
-        <span>{{ connectionStatus === 'connected' ? t('statusBar.connected') : t('statusBar.disconnected') }}</span>
-      </div>
+      <template v-for="(item, index) in rightItems" :key="item.key">
+        <div v-if="index > 0" class="status-divider"></div>
+        <div class="status-item">
+          <template v-if="item.key === 'shell'">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5" />
+              <line x1="12" y1="19" x2="20" y2="19" />
+            </svg>
+            <span>{{ getShellName(shell) }}</span>
+          </template>
+          <template v-else-if="item.key === 'status'">
+            <span :class="{ 'text-success': status === 'running' }">{{ renderStatus(status) }}</span>
+          </template>
+          <template v-else-if="item.key === 'connection'">
+            <span class="status-dot" :class="connectionStatus"></span>
+            <span>{{ connectionStatus === 'connected' ? t('statusBar.connected') : t('statusBar.disconnected') }}</span>
+          </template>
+        </div>
+      </template>
     </div>
   </div>
 </template>
