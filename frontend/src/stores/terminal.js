@@ -1,0 +1,126 @@
+import { defineStore } from 'pinia'
+import api from '../services/api'
+import router from '../router'
+
+let tabIdCounter = 0
+
+export const useTerminalStore = defineStore('terminal', {
+  state: () => ({
+    tabs: [],
+    sessions: [],
+    activeTabId: null
+  }),
+
+  getters: {
+    activeTab: (state) => state.tabs.find((t) => t.id === state.activeTabId) || null,
+    activeSession: (state) => {
+      const tab = state.tabs.find((t) => t.id === state.activeTabId)
+      return tab ? tab.sessionId : null
+    }
+  },
+
+  actions: {
+    async createSession(shell = '/bin/bash', title = '', cwd = '') {
+      const { data } = await api.post('/api/sessions', {
+        title: title || `${shell.split('/').pop()} session`,
+        shell,
+        cwd
+      })
+      const tabId = ++tabIdCounter
+      this.tabs.push({
+        id: tabId,
+        title: title || `${shell.split('/').pop()} #${this.tabs.length + 1}`,
+        sessionId: data.id,
+        shell: shell,
+        status: 'running'
+      })
+      this.activeTabId = tabId
+      router.push(`/terminal/${data.id}`)
+      return data
+    },
+
+    closeTab(tabId) {
+      const idx = this.tabs.findIndex((t) => t.id === tabId)
+      if (idx === -1) return
+
+      this.tabs.splice(idx, 1)
+
+      if (this.activeTabId === tabId) {
+        if (this.tabs.length > 0) {
+          const newIdx = Math.min(idx, this.tabs.length - 1)
+          this.activeTabId = this.tabs[newIdx].id
+          router.push(`/terminal/${this.tabs[newIdx].sessionId}`)
+        } else {
+          this.activeTabId = null
+          router.push('/terminal')
+        }
+      }
+    },
+
+    switchTab(tabId) {
+      const tab = this.tabs.find((t) => t.id === tabId)
+      if (tab) {
+        this.activeTabId = tabId
+        router.push(`/terminal/${tab.sessionId}`)
+      }
+    },
+
+    renameTab(tabId, newTitle) {
+      const tab = this.tabs.find((t) => t.id === tabId)
+      if (tab) {
+        tab.title = newTitle
+      }
+    },
+
+    reorderTabs(fromIndex, toIndex) {
+      const [moved] = this.tabs.splice(fromIndex, 1)
+      this.tabs.splice(toIndex, 0, moved)
+    },
+
+    addTabForSession(sessionId, title, shell) {
+      const existing = this.tabs.find((t) => t.sessionId === sessionId)
+      if (existing) {
+        this.activeTabId = existing.id
+        return existing
+      }
+      const tabId = ++tabIdCounter
+      this.tabs.push({
+        id: tabId,
+        title: title || `Session ${sessionId}`,
+        sessionId,
+        shell: shell || '/bin/bash',
+        status: 'running'
+      })
+      this.activeTabId = tabId
+      return this.tabs[this.tabs.length - 1]
+    },
+
+    updateTabStatus(sessionId, status) {
+      const tab = this.tabs.find((t) => t.sessionId === sessionId)
+      if (tab) tab.status = status
+    },
+
+    async fetchSessions() {
+      try {
+        const { data } = await api.get('/api/sessions')
+        this.sessions = data
+      } catch {
+        this.sessions = []
+      }
+    },
+
+    async reconnectSession(sessionId) {
+      const { data } = await api.post(`/api/sessions/${sessionId}/reconnect`)
+      this.addTabForSession(data.id, data.title, data.shell)
+      router.push(`/terminal/${data.id}`)
+      return data
+    },
+
+    async deleteSession(sessionId) {
+      await api.delete(`/api/sessions/${sessionId}`)
+      const tab = this.tabs.find((t) => t.sessionId === sessionId)
+      if (tab) this.closeTab(tab.id)
+      this.sessions = this.sessions.filter((s) => s.id !== sessionId)
+    }
+  }
+})
