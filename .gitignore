@@ -39,3 +39,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Runtime
+.webtty.pid
+backend/data/

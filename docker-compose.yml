@@ -1,0 +1,17 @@
+services:
+  webtty:
+    build: .
+    container_name: webtty
+    ports:
+      - "8000:8000"
+    volumes:
+      - webtty-data:/app/data
+      - webtty-uploads:/app/uploads
+    environment:
+      - WEBTTY_SECRET_KEY=change-me-to-a-random-string-in-production
+      - WEBTTY_DATABASE_URL=sqlite+aiosqlite:////app/data/webtty.db
+    restart: unless-stopped
+
+volumes:
+  webtty-data:
+  webtty-uploads:
