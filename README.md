@@ -1,8 +1,12 @@
-# WebTTY Enterprise
+# WebTTY
 
 <p align="center">
   <strong>A self-hosted, enterprise-grade web terminal platform</strong><br>
   Access your servers from anywhere through a modern browser — no SSH client required.
+</p>
+
+<p align="center">
+  <strong>English</strong> | <a href="README.zh-CN.md">简体中文</a>
 </p>
 
 <p align="center">
@@ -18,6 +22,8 @@
 - **Full Terminal Experience** — Run bash, zsh, fish and any other shell with full PTY support
 - **Interactive Programs** — vim, less, top, htop and other TUI applications work flawlessly
 - **Multi-Tab Interface** — Open multiple terminal sessions in a single browser window
+- **Settings as Tabs** — Settings page opens as a tab within the terminal view for seamless workflow
+- **Multi-Language Support** — English, 简体中文, 繁體中文, 日本語 with browser auto-detection
 - **WebSocket Binary Protocol** — Efficient, low-latency communication with custom binary framing
 - **oh-my-zsh Support** — Full compatibility with themes, plugins and autocompletion
 - **Session Persistence** — Reconnect to running sessions without losing state
@@ -57,36 +63,6 @@ FastAPI Backend
 
 ## Quick Start
 
-### Docker (Recommended)
-
-```bash
-docker compose up -d
-```
-
-Open `http://localhost:8000` and register your first account.
-
-### Shell Script
-
-```bash
-./deploy.sh
-```
-
-This will automatically:
-1. Install Python and Node dependencies
-2. Build the frontend
-3. Start the server on port 8000
-
-Stop the server:
-
-```bash
-./deploy.sh --stop
-```
-
-### Manual Setup
-
-<details>
-<summary>Click to expand</summary>
-
 **Prerequisites:** Python 3.12+, Node.js 18+, npm
 
 ```bash
@@ -105,7 +81,29 @@ pip install -r requirements.txt
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-</details>
+Open `http://localhost:8000` and register your first account.
+
+### Shell Script
+
+```bash
+./deploy.sh
+```
+
+This will automatically install dependencies, build the frontend and start the server on port 8000.
+
+Stop the server:
+
+```bash
+./deploy.sh --stop
+```
+
+### Docker
+
+```bash
+docker compose up -d
+```
+
+Open `http://localhost:8000` and register your first account.
 
 ## Configuration
 

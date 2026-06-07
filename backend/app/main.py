@@ -106,13 +106,13 @@ async def lifespan(app: FastAPI):
     await migrate_db()
     await cleanup_stale_sessions()
     await cleanup_expired_sessions()
-    logger.info("WebTTY Enterprise started")
+    logger.info("WebTTY started")
     yield
-    logger.info("WebTTY Enterprise shutting down")
+    logger.info("WebTTY shutting down")
 
 
 app = FastAPI(
-    title="WebTTY Enterprise",
+    title="WebTTY",
     version="1.0.0",
     lifespan=lifespan,
 )

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# WebTTY Enterprise - One-click deployment script
+# WebTTY - One-click deployment script
 #
 # Usage:
 #   ./deploy.sh              # Build and start
@@ -96,7 +96,7 @@ start_server() {
         log "Server started (PID: $(cat "$PID_FILE"))"
         echo ""
         echo -e "${CYAN}========================================${NC}"
-        echo -e "${CYAN}  WebTTY Enterprise is running!${NC}"
+        echo -e "${CYAN}  WebTTY is running!${NC}"
         echo -e "${CYAN}  Open: http://localhost:$PORT${NC}"
         echo -e "${CYAN}  Log:  $SCRIPT_DIR/webtty.log${NC}"
         echo -e "${CYAN}  Stop: ./deploy.sh --stop${NC}"
@@ -134,7 +134,7 @@ docker_deploy() {
     log "Docker containers started."
     echo ""
     echo -e "${CYAN}========================================${NC}"
-    echo -e "${CYAN}  WebTTY Enterprise is running!${NC}"
+    echo -e "${CYAN}  WebTTY is running!${NC}"
     echo -e "${CYAN}  Open: http://localhost:8000${NC}"
     echo -e "${CYAN}  Stop: docker compose down${NC}"
     echo -e "${CYAN}  Logs: docker compose logs -f${NC}"

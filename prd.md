@@ -2,7 +2,7 @@
 
 Version: v1.0
 
-Product Name: WebTTY Enterprise
+Product Name: WebTTY
 
 Owner: Platform Team
 
