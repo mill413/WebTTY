@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Entry point for the PyInstaller-bundled WebTTY executable."""
+"""Entry point for the PyInstaller-bundled MebTTY executable."""
 
 import os
 import sys
@@ -12,25 +12,25 @@ def main():
         bundled_data = os.path.join(os.path.dirname(sys.executable), "data")
 
         # Set env vars BEFORE importing the app so config.py picks them up
-        if not os.environ.get("WEBTTY_STATIC_DIR") and os.path.isdir(bundled_frontend):
-            os.environ["WEBTTY_STATIC_DIR"] = bundled_frontend
+        if not os.environ.get("MEBTTY_STATIC_DIR") and os.path.isdir(bundled_frontend):
+            os.environ["MEBTTY_STATIC_DIR"] = bundled_frontend
 
-        if not os.environ.get("WEBTTY_DATABASE_URL"):
+        if not os.environ.get("MEBTTY_DATABASE_URL"):
             os.makedirs(bundled_data, exist_ok=True)
-            os.environ["WEBTTY_DATABASE_URL"] = (
-                f"sqlite+aiosqlite:///{bundled_data}/webtty.db"
+            os.environ["MEBTTY_DATABASE_URL"] = (
+                f"sqlite+aiosqlite:///{bundled_data}/mebtty.db"
             )
 
-        if not os.environ.get("WEBTTY_UPLOAD_DIR"):
+        if not os.environ.get("MEBTTY_UPLOAD_DIR"):
             upload_dir = os.path.join(bundled_data, "uploads")
             os.makedirs(upload_dir, exist_ok=True)
-            os.environ["WEBTTY_UPLOAD_DIR"] = upload_dir
+            os.environ["MEBTTY_UPLOAD_DIR"] = upload_dir
 
     # Now import and run the app
     import uvicorn
 
-    host = os.environ.get("WEBTTY_HOST", "0.0.0.0")
-    port = int(os.environ.get("WEBTTY_PORT", "18888"))
+    host = os.environ.get("MEBTTY_HOST", "0.0.0.0")
+    port = int(os.environ.get("MEBTTY_PORT", "18888"))
 
     uvicorn.run(
         "app.main:app",

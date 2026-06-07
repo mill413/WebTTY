@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-WebTTY is a self-hosted web terminal platform with a Python backend and a Vue 3 frontend.
+MebTTY is a self-hosted web terminal platform with a Python backend and a Vue 3 frontend.
 
 - `backend/` — FastAPI application (Python 3.12+)
   - `app/main.py` — Application entry point and route definitions
@@ -55,4 +55,4 @@ Pull requests should include a description of changes, linked issues, and screen
 
 ## Architecture Overview
 
-The frontend communicates with the backend over HTTP (REST) and WebSocket. Terminal sessions use a custom binary WebSocket protocol for low-latency PTY I/O. Session state persists in SQLite (`backend/data/webtty.db`). Internationalization is handled by `vue-i18n` with browser locale auto-detection.
+The frontend communicates with the backend over HTTP (REST) and WebSocket. Terminal sessions use a custom binary WebSocket protocol for low-latency PTY I/O. Session state persists in SQLite (`backend/data/mebtty.db`). Internationalization is handled by `vue-i18n` with browser locale auto-detection.

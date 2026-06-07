@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# WebTTY - Build Debian package locally
+# MebTTY - Build Debian package locally
 #
 # Usage:
 #   ./pkg/deb/build-deb.sh [version]    # Build deb package with specified version
@@ -51,17 +51,17 @@ check_deps() {
 build_deb() {
     local version="$1"
     
-    log "Building WebTTY deb package v${version}..."
+    log "Building MebTTY deb package v${version}..."
     
     # Check if executable exists
-    if [[ ! -f "$PROJECT_ROOT/build/webtty" ]]; then
+    if [[ ! -f "$PROJECT_ROOT/build/mebtty" ]]; then
         log "Executable not found, running build.sh first..."
         cd "$PROJECT_ROOT"
         ./build.sh
     fi
     
     # Create package directory
-    local pkg_dir="webtty_${version}_amd64"
+    local pkg_dir="mebtty_${version}_amd64"
     cd "$PROJECT_ROOT"
     rm -rf "$pkg_dir"
     
@@ -72,13 +72,13 @@ build_deb() {
     
     # Copy executable
     log "Copying executable..."
-    cp "$PROJECT_ROOT/build/webtty" "$pkg_dir/usr/local/bin/webtty"
-    chmod 755 "$pkg_dir/usr/local/bin/webtty"
+    cp "$PROJECT_ROOT/build/mebtty" "$pkg_dir/usr/local/bin/mebtty"
+    chmod 755 "$pkg_dir/usr/local/bin/mebtty"
     
     # Copy systemd service
     log "Copying systemd service..."
-    cp "$PROJECT_ROOT/webtty.service" "$pkg_dir/lib/systemd/system/webtty.service"
-    chmod 644 "$pkg_dir/lib/systemd/system/webtty.service"
+    cp "$PROJECT_ROOT/mebtty.service" "$pkg_dir/lib/systemd/system/mebtty.service"
+    chmod 644 "$pkg_dir/lib/systemd/system/mebtty.service"
     
     # Copy DEBIAN metadata
     log "Copying DEBIAN metadata..."
@@ -102,21 +102,21 @@ build_deb() {
     echo -e "${CYAN}${NC}"
     echo -e "${CYAN}  Package: $deb_file ($size)${NC}"
     echo -e "${CYAN}  Install: sudo dpkg -i $deb_file${NC}"
-    echo -e "${CYAN}  Remove:  sudo dpkg -r webtty${NC}"
-    echo -e "${CYAN}  Purge:   sudo dpkg -P webtty${NC}"
+    echo -e "${CYAN}  Remove:  sudo dpkg -r mebtty${NC}"
+    echo -e "${CYAN}  Purge:   sudo dpkg -P mebtty${NC}"
     echo -e "${CYAN}========================================${NC}"
 }
 
 clean() {
     log "Cleaning deb build artifacts..."
     cd "$PROJECT_ROOT"
-    rm -rf webtty_*_amd64
-    rm -f webtty_*_amd64.deb
+    rm -rf mebtty_*_amd64
+    rm -f mebtty_*_amd64.deb
     log "Done."
 }
 
 print_help() {
-    echo "WebTTY - Build Debian package locally"
+    echo "MebTTY - Build Debian package locally"
     echo ""
     echo "Usage: ./pkg/deb/build-deb.sh [command] [version]"
     echo ""
@@ -131,7 +131,7 @@ print_help() {
     echo "  ./pkg/deb/build-deb.sh --clean      # Clean up"
     echo ""
     echo "Output:"
-    echo "  webtty_VERSION_amd64.deb    Debian package file"
+    echo "  mebtty_VERSION_amd64.deb    Debian package file"
 }
 
 # ── Main ─────────────────────────────────────────────────────────

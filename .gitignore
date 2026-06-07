@@ -41,13 +41,13 @@ Thumbs.db
 *.log
 
 # Runtime
-.webtty.pid
+.mebtty.pid
 backend/data/
 backend/uploads/
 
 # Debian packages
 *.deb
-webtty_*_amd64/
+mebtty_*_amd64/
 
 # Arch Linux packages
 *.pkg.tar.zst

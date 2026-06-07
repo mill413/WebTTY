@@ -1,4 +1,4 @@
-# WebTTY AUR Package
+# MebTTY AUR Package
 
 本目录包含 Arch Linux 用户仓库 (AUR) 包的相关文件。
 
@@ -7,7 +7,7 @@
 ```
 pkg/aur/
 ├── PKGBUILD           # 包构建脚本模板（CI 自动填充版本号）
-├── webtty.install     # pacman 安装脚本（启用服务、生成密钥）
+├── mebtty.install     # pacman 安装脚本（启用服务、生成密钥）
 ├── build-aur.sh       # 本地构建脚本
 └── README.md          # 本文件
 ```
@@ -21,11 +21,11 @@ Arch Linux 包构建脚本，定义了：
 - `pkgname` / `pkgver` / `pkgrel` — 包名、版本、发布号
 - `depends` — 运行时依赖 (`glibc`, `gcc-libs`)
 - `source` — 从 GitHub Release 下载可执行文件和 service 文件
-- `package()` — 安装到 `/usr/bin/webtty` 和 `/usr/lib/systemd/system/`
+- `package()` — 安装到 `/usr/bin/mebtty` 和 `/usr/lib/systemd/system/`
 
 CI 构建时会自动替换 `${VERSION}` 为实际版本号。
 
-### webtty.install
+### mebtty.install
 
 pacman 安装钩子脚本，包含：
 
@@ -46,37 +46,37 @@ pacman 安装钩子脚本，包含：
 
 ```bash
 # 下载预编译的 pkg 文件
-wget https://github.com/mill413/webtty/releases/download/v1.0.0/webtty-1.0.0-1-x86_64.pkg.tar.zst
+wget https://github.com/mill413/mebtty/releases/download/v1.0.0/mebtty-1.0.0-1-x86_64.pkg.tar.zst
 
 # 安装
-sudo pacman -U webtty-1.0.0-1-x86_64.pkg.tar.zst
+sudo pacman -U mebtty-1.0.0-1-x86_64.pkg.tar.zst
 
 # 启用并启动服务
-sudo systemctl enable --now webtty
+sudo systemctl enable --now mebtty
 ```
 
 ### 从 AUR 助手安装（发布到 AUR 后可用）
 
 ```bash
 # 使用 yay
-yay -S webtty
+yay -S mebtty
 
 # 使用 paru
-paru -S webtty
+paru -S mebtty
 ```
 
 ### 手动构建安装
 
 ```bash
 # 克隆项目
-git clone https://github.com/mill413/webtty.git
-cd webtty
+git clone https://github.com/mill413/mebtty.git
+cd mebtty
 
 # 构建 AUR 包
 ./pkg/aur/build-aur.sh 1.0.0
 
 # 安装
-sudo pacman -U webtty-1.0.0-1-x86_64.pkg.tar.zst
+sudo pacman -U mebtty-1.0.0-1-x86_64.pkg.tar.zst
 ```
 
 ## 本地构建
@@ -113,21 +113,21 @@ git tag v1.0.0
 
 ```bash
 # 卸载（保留配置和数据）
-sudo pacman -R webtty
+sudo pacman -R mebtty
 
 # 完全卸载（包括配置和数据）
-sudo pacman -Rn webtty
-sudo rm -rf /var/lib/webtty /etc/webtty
+sudo pacman -Rn mebtty
+sudo rm -rf /var/lib/mebtty /etc/mebtty
 ```
 
 ## 文件路径
 
 | 路径 | 说明 |
 |------|------|
-| `/usr/bin/webtty` | 可执行文件 |
-| `/usr/lib/systemd/system/webtty.service` | systemd 服务 |
-| `/etc/webtty/webtty.env` | 配置文件 |
-| `/var/lib/webtty/` | 数据目录 |
+| `/usr/bin/mebtty` | 可执行文件 |
+| `/usr/lib/systemd/system/mebtty.service` | systemd 服务 |
+| `/etc/mebtty/mebtty.env` | 配置文件 |
+| `/var/lib/mebtty/` | 数据目录 |
 
 ## 相关资源
 

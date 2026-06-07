@@ -2,9 +2,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite+aiosqlite:///./webtty.db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./mebtty.db"
     REDIS_URL: str = "redis://localhost:6379/0"
-    SECRET_KEY: str = "webtty-secret-key-change-in-production"
+    SECRET_KEY: str = "mebtty-secret-key-change-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     STATIC_DIR: str = ""  # Empty = auto-detect
 
     class Config:
-        env_prefix = "WEBTTY_"
+        env_prefix = "MEBTTY_"
 
 
 settings = Settings()

@@ -1,11 +1,11 @@
-Package: webtty
+Package: mebtty
 Version: ${VERSION}
 Section: web
 Priority: optional
 Architecture: amd64
 Depends: libc6 (>= 2.36)
-Maintainer: WebTTY Maintainers
-Homepage: https://github.com/mill413/webtty
+Maintainer: MebTTY Maintainers
+Homepage: https://github.com/mill413/mebtty
 Description: Self-hosted web terminal
  A self-hosted web terminal that brings the full power of your server
  to any browser. Supports bash, zsh, fish, nushell with oh-my-zsh

@@ -1,6 +1,6 @@
 export default {
   login: {
-    title: 'WebTTY',
+    title: 'MebTTY',
     signIn: 'アカウントにサインイン',
     signUp: '新しいアカウントを作成',
     username: 'ユーザー名',

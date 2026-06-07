@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# WebTTY - Build Arch Linux package locally
+# MebTTY - Build Arch Linux package locally
 #
 # Usage:
 #   ./pkg/aur/build-aur.sh [version]    # Build AUR package with specified version
@@ -58,10 +58,10 @@ check_deps() {
 build_aur() {
     local version="$1"
 
-    log "Building WebTTY AUR package v${version}..."
+    log "Building MebTTY AUR package v${version}..."
 
     # Check if executable exists
-    if [[ ! -f "$PROJECT_ROOT/build/webtty" ]]; then
+    if [[ ! -f "$PROJECT_ROOT/build/mebtty" ]]; then
         log "Executable not found, running build.sh first..."
         cd "$PROJECT_ROOT"
         ./build.sh
@@ -75,33 +75,33 @@ build_aur() {
     log "Creating package structure..."
 
     # Copy executable
-    cp "$PROJECT_ROOT/build/webtty" "$build_dir/webtty-${version}-linux-amd64"
-    chmod +x "$build_dir/webtty-${version}-linux-amd64"
+    cp "$PROJECT_ROOT/build/mebtty" "$build_dir/mebtty-${version}-linux-amd64"
+    chmod +x "$build_dir/mebtty-${version}-linux-amd64"
 
     # Copy service file
-    cp "$PROJECT_ROOT/webtty.service" "$build_dir/webtty.service"
+    cp "$PROJECT_ROOT/mebtty.service" "$build_dir/mebtty.service"
 
     # Copy install script
-    cp "$SCRIPT_DIR/webtty.install" "$build_dir/webtty.install"
+    cp "$SCRIPT_DIR/mebtty.install" "$build_dir/mebtty.install"
 
     # Generate PKGBUILD for local build (without source array, reference local files)
     cat > "$build_dir/PKGBUILD" <<EOF
-# Maintainer: WebTTY Contributors
-pkgname=webtty
+# Maintainer: MebTTY Contributors
+pkgname=mebtty
 pkgver=$version
 pkgrel=1
 pkgdesc="A self-hosted web terminal that runs in your browser"
 arch=('x86_64')
-url="https://github.com/mill413/webtty"
+url="https://github.com/mill413/mebtty"
 license=('MIT')
 depends=('glibc' 'gcc-libs')
-install=webtty.install
+install=mebtty.install
 source=()
 
 package() {
     cd "\$srcdir/.."
-    install -Dm755 "webtty-${version}-linux-amd64" "\$pkgdir/usr/bin/webtty"
-    install -Dm644 "webtty.service" "\$pkgdir/usr/lib/systemd/system/webtty.service"
+    install -Dm755 "mebtty-${version}-linux-amd64" "\$pkgdir/usr/bin/mebtty"
+    install -Dm644 "mebtty.service" "\$pkgdir/usr/lib/systemd/system/mebtty.service"
 }
 EOF
 
@@ -111,7 +111,7 @@ EOF
     makepkg -f --noconfirm
 
     # Move output to project root
-    local pkg_file=$(ls webtty-*.pkg.tar.zst 2>/dev/null | head -1)
+    local pkg_file=$(ls mebtty-*.pkg.tar.zst 2>/dev/null | head -1)
     if [[ -n "$pkg_file" ]]; then
         cp "$pkg_file" "$PROJECT_ROOT/"
         local size=$(du -h "$PROJECT_ROOT/$pkg_file" | cut -f1)
@@ -122,7 +122,7 @@ EOF
         echo -e "${CYAN}${NC}"
         echo -e "${CYAN}  Package: $pkg_file ($size)${NC}"
         echo -e "${CYAN}  Install: sudo pacman -U $pkg_file${NC}"
-        echo -e "${CYAN}  Remove:  sudo pacman -R webtty${NC}"
+        echo -e "${CYAN}  Remove:  sudo pacman -R mebtty${NC}"
         echo -e "${CYAN}========================================${NC}"
     else
         err "Package build failed"
@@ -134,12 +134,12 @@ clean() {
     log "Cleaning AUR build artifacts..."
     cd "$PROJECT_ROOT"
     rm -rf aur-build
-    rm -f webtty-*.pkg.tar.zst
+    rm -f mebtty-*.pkg.tar.zst
     log "Done."
 }
 
 print_help() {
-    echo "WebTTY - Build Arch Linux package locally"
+    echo "MebTTY - Build Arch Linux package locally"
     echo ""
     echo "Usage: ./pkg/aur/build-aur.sh [command] [version]"
     echo ""
@@ -158,7 +158,7 @@ print_help() {
     echo "  ./pkg/aur/build-aur.sh --clean      # Clean up"
     echo ""
     echo "Output:"
-    echo "  webtty-VERSION-1-x86_64.pkg.tar.zst  Arch Linux package"
+    echo "  mebtty-VERSION-1-x86_64.pkg.tar.zst  Arch Linux package"
 }
 
 # ── Main ─────────────────────────────────────────────────────────

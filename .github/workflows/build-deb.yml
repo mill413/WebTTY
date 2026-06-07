@@ -76,13 +76,13 @@ jobs:
         run: |
           cd backend
           source venv/bin/activate
-          pyinstaller --clean --noconfirm webtty.spec
-          chmod +x dist/webtty
+          pyinstaller --clean --noconfirm mebtty.spec
+          chmod +x dist/mebtty
 
       - name: Assemble deb package
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          PKG_DIR="webtty_${VERSION}_amd64"
+          PKG_DIR="mebtty_${VERSION}_amd64"
 
           # Create package directory structure
           mkdir -p "$PKG_DIR/DEBIAN"
@@ -90,12 +90,12 @@ jobs:
           mkdir -p "$PKG_DIR/lib/systemd/system"
 
           # Copy executable
-          cp backend/dist/webtty "$PKG_DIR/usr/local/bin/webtty"
-          chmod 755 "$PKG_DIR/usr/local/bin/webtty"
+          cp backend/dist/mebtty "$PKG_DIR/usr/local/bin/mebtty"
+          chmod 755 "$PKG_DIR/usr/local/bin/mebtty"
 
           # Copy systemd service
-          cp webtty.service "$PKG_DIR/lib/systemd/system/webtty.service"
-          chmod 644 "$PKG_DIR/lib/systemd/system/webtty.service"
+          cp mebtty.service "$PKG_DIR/lib/systemd/system/mebtty.service"
+          chmod 644 "$PKG_DIR/lib/systemd/system/mebtty.service"
 
           # Copy DEBIAN metadata with version substitution
           sed "s/\${VERSION}/$VERSION/g" pkg/deb/DEBIAN/control > "$PKG_DIR/DEBIAN/control"
@@ -107,21 +107,21 @@ jobs:
       - name: Build deb package
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          PKG_DIR="webtty_${VERSION}_amd64"
+          PKG_DIR="mebtty_${VERSION}_amd64"
           dpkg-deb --build --root-owner-group "$PKG_DIR"
           ls -lh "${PKG_DIR}.deb"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: webtty_${{ steps.version.outputs.version }}_amd64
-          path: webtty_${{ steps.version.outputs.version }}_amd64.deb
+          name: mebtty_${{ steps.version.outputs.version }}_amd64
+          path: mebtty_${{ steps.version.outputs.version }}_amd64.deb
           retention-days: 30
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: webtty_${{ steps.version.outputs.version }}_amd64.deb
+          files: mebtty_${{ steps.version.outputs.version }}_amd64.deb
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, '-') }}

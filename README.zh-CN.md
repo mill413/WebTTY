@@ -1,4 +1,4 @@
-# WebTTY
+# MebTTY
 
 <p align="center">
   <strong>一个自托管的 Web 终端，将服务器的完整能力带到任意浏览器。</strong><br>
@@ -17,7 +17,7 @@
 
 ---
 
-WebTTY 将任意现代浏览器变成全功能终端。基于 **FastAPI** 和 **Vue 3** 构建，提供真正的 PTY 会话，支持 bash、zsh、fish、nushell 等多种 shell —— 包括 oh-my-zsh 主题和 vim、htop、less 等交互式 TUI 程序。
+MebTTY 将任意现代浏览器变成全功能终端。基于 **FastAPI** 和 **Vue 3** 构建，提供真正的 PTY 会话，支持 bash、zsh、fish、nushell 等多种 shell —— 包括 oh-my-zsh 主题和 vim、htop、less 等交互式 TUI 程序。
 
 内置的**文件浏览器**让你在终端旁浏览、上传、下载、重命名和删除文件。**Catppuccin 主题**的 UI 支持深色/浅色模式、自定义强调色、多标签页，以及四种语言（English、简体中文、繁體中文、日本語），让日常使用更加愉悦。
 
@@ -176,22 +176,22 @@ docker compose up -d
 sudo ./install.sh
 ```
 
-安装后，WebTTY 作为受管理的 systemd 服务运行，带有安全加固（`ProtectSystem=strict`、`NoNewPrivileges`、`PrivateTmp`）和故障自动重启。
+安装后，MebTTY 作为受管理的 systemd 服务运行，带有安全加固（`ProtectSystem=strict`、`NoNewPrivileges`、`PrivateTmp`）和故障自动重启。
 
 ```bash
-sudo systemctl start webtty      # 启动服务
-sudo systemctl stop webtty       # 停止服务
-sudo systemctl restart webtty    # 重启服务
-sudo systemctl status webtty     # 查看服务状态
-sudo journalctl -u webtty -f     # 查看日志
+sudo systemctl start mebtty      # 启动服务
+sudo systemctl stop mebtty       # 停止服务
+sudo systemctl restart mebtty    # 重启服务
+sudo systemctl status mebtty     # 查看服务状态
+sudo journalctl -u mebtty -f     # 查看日志
 ```
 
 | 路径                              | 说明                         |
 | --------------------------------- | ---------------------------- |
-| `/usr/local/bin/webtty`           | 可执行文件                   |
-| `/etc/webtty/webtty.env`          | 环境配置（自动生成）         |
-| `/var/lib/webtty/webtty.db`       | SQLite 数据库                |
-| `/var/lib/webtty/uploads`         | 上传文件目录                 |
+| `/usr/local/bin/mebtty`           | 可执行文件                   |
+| `/etc/mebtty/mebtty.env`          | 环境配置（自动生成）         |
+| `/var/lib/mebtty/mebtty.db`       | SQLite 数据库                |
+| `/var/lib/mebtty/uploads`         | 上传文件目录                 |
 
 ```bash
 # 卸载（移除服务和二进制文件，保留数据和配置）
@@ -200,33 +200,33 @@ sudo ./install.sh --uninstall
 
 ## 配置说明
 
-所有设置通过环境变量配置（前缀：`WEBTTY_`）：
+所有设置通过环境变量配置（前缀：`MEBTTY_`）：
 
 | 变量                                 | 默认值                             | 说明                                 |
 | ------------------------------------ | ---------------------------------- | ------------------------------------ |
-| `WEBTTY_SECRET_KEY`                  | 自动生成                           | JWT 签名密钥。**生产环境必须设置。** |
-| `WEBTTY_DATABASE_URL`                | `sqlite+aiosqlite:///./webtty.db`  | 数据库连接字符串                     |
-| `WEBTTY_BROWSE_ROOT`                 | `~`（用户主目录）                  | 文件浏览器根目录                     |
-| `WEBTTY_STATIC_DIR`                  | 自动检测                           | 前端构建输出路径                     |
-| `WEBTTY_UPLOAD_DIR`                  | `./uploads`                        | 上传文件和头像目录                   |
-| `WEBTTY_ACCESS_TOKEN_EXPIRE_MINUTES` | `60`                               | JWT 访问令牌有效期                   |
-| `WEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`   | `7`                                | JWT 刷新令牌有效期                   |
-| `WEBTTY_MAX_UPLOAD_SIZE`             | `104857600`                        | 最大上传大小（字节，100MB）          |
-| `WEBTTY_HOST`                        | `0.0.0.0`                          | 服务器绑定地址                       |
-| `WEBTTY_PORT`                        | `18888`                             | 服务器监听端口                       |
+| `MEBTTY_SECRET_KEY`                  | 自动生成                           | JWT 签名密钥。**生产环境必须设置。** |
+| `MEBTTY_DATABASE_URL`                | `sqlite+aiosqlite:///./mebtty.db`  | 数据库连接字符串                     |
+| `MEBTTY_BROWSE_ROOT`                 | `~`（用户主目录）                  | 文件浏览器根目录                     |
+| `MEBTTY_STATIC_DIR`                  | 自动检测                           | 前端构建输出路径                     |
+| `MEBTTY_UPLOAD_DIR`                  | `./uploads`                        | 上传文件和头像目录                   |
+| `MEBTTY_ACCESS_TOKEN_EXPIRE_MINUTES` | `60`                               | JWT 访问令牌有效期                   |
+| `MEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`   | `7`                                | JWT 刷新令牌有效期                   |
+| `MEBTTY_MAX_UPLOAD_SIZE`             | `104857600`                        | 最大上传大小（字节，100MB）          |
+| `MEBTTY_HOST`                        | `0.0.0.0`                          | 服务器绑定地址                       |
+| `MEBTTY_PORT`                        | `18888`                            | 服务器监听端口                       |
 
 ### 生产环境示例
 
 ```bash
-export WEBTTY_SECRET_KEY="your-random-secret-string"
-export WEBTTY_DATABASE_URL="sqlite+aiosqlite:////data/webtty.db"
+export MEBTTY_SECRET_KEY="your-random-secret-string"
+export MEBTTY_DATABASE_URL="sqlite+aiosqlite:////data/mebtty.db"
 ./deploy.sh
 ```
 
 ## 项目结构
 
 ```text
-webtty/
+mebtty/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI 应用入口
@@ -292,7 +292,7 @@ webtty/
 │   └── vite.config.js
 ├── build.sh                     # 构建独立可执行文件 (PyInstaller)
 ├── install.sh                   # 安装/卸载 systemd 服务
-├── webtty.service               # systemd 服务单元文件
+├── mebtty.service               # systemd 服务单元文件
 ├── Dockerfile                   # 多阶段 Docker 构建
 ├── docker-compose.yml           # Docker Compose 配置
 ├── deploy.sh                    # 一键部署脚本

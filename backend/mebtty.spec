@@ -1,5 +1,5 @@
 # -*- mode: python ; python-option flags: 'u' -*-
-# PyInstaller spec file for WebTTY
+# PyInstaller spec file for MebTTY
 
 import os
 
@@ -16,7 +16,7 @@ a = Analysis(
         (FRONTEND_DIST, 'frontend_dist'),
     ],
     hiddenimports=[
-        # WebTTY app modules (not statically imported from bundle_entry.py)
+        # MebTTY app modules (not statically imported from bundle_entry.py)
         'app',
         'app.main',
         'app.config',
@@ -121,7 +121,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='webtty',
+    name='mebtty',
     debug=False,
     bootloader_ignore_signals=False,
     strip=True,

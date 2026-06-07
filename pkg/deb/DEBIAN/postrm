@@ -2,8 +2,8 @@
 set -e
 
 if [ "$1" = "purge" ]; then
-    rm -rf /var/lib/webtty
-    rm -rf /etc/webtty
+    rm -rf /var/lib/mebtty
+    rm -rf /etc/mebtty
 fi
 
 if [ -d /run/systemd/system ]; then

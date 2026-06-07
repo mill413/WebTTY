@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-DATA_DIR="/var/lib/webtty"
-ENV_FILE="/etc/webtty/webtty.env"
+DATA_DIR="/var/lib/mebtty"
+ENV_FILE="/etc/mebtty/mebtty.env"
 
 # Create data directories
 mkdir -p "$DATA_DIR/uploads"
@@ -11,12 +11,12 @@ mkdir -p "$DATA_DIR/uploads"
 if [ ! -f "$ENV_FILE" ]; then
     SECRET=$(python3 -c 'import secrets; print(secrets.token_hex(32))' 2>/dev/null || openssl rand -hex 32)
     cat > "$ENV_FILE" <<EOF
-# WebTTY environment configuration
-# Modify and restart: systemctl restart webtty
+# MebTTY environment configuration
+# Modify and restart: systemctl restart mebtty
 
-WEBTTY_SECRET_KEY=$SECRET
-WEBTTY_HOST=0.0.0.0
-WEBTTY_PORT=18888
+MEBTTY_SECRET_KEY=$SECRET
+MEBTTY_HOST=0.0.0.0
+MEBTTY_PORT=18888
 EOF
     chmod 600 "$ENV_FILE"
 fi
@@ -24,19 +24,19 @@ fi
 # Enable and start systemd service
 if [ -d /run/systemd/system ]; then
     systemctl daemon-reload
-    systemctl enable webtty.service
-    systemctl start webtty.service
+    systemctl enable mebtty.service
+    systemctl start mebtty.service
 fi
 
 echo ""
-echo "  WebTTY installed successfully!"
+echo "  MebTTY installed successfully!"
 echo ""
 echo "  Config:     $ENV_FILE"
 echo "  Data:       $DATA_DIR"
 echo "  Web UI:     http://localhost:18888"
 echo ""
-echo "  systemctl start webtty"
-echo "  systemctl stop webtty"
-echo "  systemctl status webtty"
-echo "  journalctl -u webtty -f"
+echo "  systemctl start mebtty"
+echo "  systemctl stop mebtty"
+echo "  systemctl status mebtty"
+echo "  journalctl -u mebtty -f"
 echo ""

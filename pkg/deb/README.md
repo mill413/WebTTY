@@ -1,6 +1,6 @@
 # Debian 包打包
 
-本目录包含构建 WebTTY Debian 软件包所需的元数据和脚本。
+本目录包含构建 MebTTY Debian 软件包所需的元数据和脚本。
 
 ## 目录结构
 
@@ -26,8 +26,8 @@ pkg/deb/
 ### `DEBIAN/postinst`
 
 安装完成后自动执行：
-- 创建数据目录 `/var/lib/webtty/uploads`
-- 生成随机密钥并写入 `/etc/webtty/webtty.env`（如不存在）
+- 创建数据目录 `/var/lib/mebtty/uploads`
+- 生成随机密钥并写入 `/etc/mebtty/mebtty.env`（如不存在）
 - 启用并启动 systemd 服务
 
 ### `DEBIAN/prerm`
@@ -49,10 +49,10 @@ GitHub Actions 会自动执行以下步骤：
 2. 使用 PyInstaller 打包后端为单一可执行文件
 3. 创建临时目录结构：
    ```
-   webtty_VERSION_amd64/
+   mebtty_VERSION_amd64/
    ├── DEBIAN/              # 从 pkg/deb/DEBIAN/ 复制
-   ├── usr/local/bin/       # webtty 可执行文件
-   └── lib/systemd/system/  # webtty.service
+   ├── usr/local/bin/       # mebtty 可执行文件
+   └── lib/systemd/system/  # mebtty.service
    ```
 4. 执行 `dpkg-deb --build` 生成 `.deb` 包
 5. 上传到 GitHub Release
@@ -83,20 +83,20 @@ GitHub Actions 会自动执行以下步骤：
 
 ```bash
 # 安装（自动启用服务）
-sudo dpkg -i webtty_1.0.0_amd64.deb
+sudo dpkg -i mebtty_1.0.0_amd64.deb
 
 # 查看服务状态
-sudo systemctl status webtty
+sudo systemctl status mebtty
 
 # 卸载（保留数据和配置）
-sudo dpkg -r webtty
+sudo dpkg -r mebtty
 
 # 完全清除（删除数据和配置）
-sudo dpkg -P webtty
+sudo dpkg -P mebtty
 ```
 
 ## 相关文件
 
 - `.github/workflows/build-deb.yml` — CI 构建流程
-- `webtty.service` — systemd 服务定义（打包时复制到 `/lib/systemd/system/`）
+- `mebtty.service` — systemd 服务定义（打包时复制到 `/lib/systemd/system/`）
 - `build.sh` — 构建可执行文件的脚本

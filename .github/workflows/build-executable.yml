@@ -76,27 +76,27 @@ jobs:
         run: |
           cd backend
           source venv/bin/activate
-          pyinstaller --clean --noconfirm webtty.spec
-          chmod +x dist/webtty
+          pyinstaller --clean --noconfirm mebtty.spec
+          chmod +x dist/mebtty
 
       - name: Prepare release artifact
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          cp backend/dist/webtty "webtty-${VERSION}-linux-amd64"
-          chmod +x "webtty-${VERSION}-linux-amd64"
-          ls -lh "webtty-${VERSION}-linux-amd64"
+          cp backend/dist/mebtty "mebtty-${VERSION}-linux-amd64"
+          chmod +x "mebtty-${VERSION}-linux-amd64"
+          ls -lh "mebtty-${VERSION}-linux-amd64"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: webtty-${{ steps.version.outputs.version }}-linux-amd64
-          path: webtty-${{ steps.version.outputs.version }}-linux-amd64
+          name: mebtty-${{ steps.version.outputs.version }}-linux-amd64
+          path: mebtty-${{ steps.version.outputs.version }}-linux-amd64
           retention-days: 30
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: webtty-${{ steps.version.outputs.version }}-linux-amd64
+          files: mebtty-${{ steps.version.outputs.version }}-linux-amd64
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, '-') }}

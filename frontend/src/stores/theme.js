@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-const STORAGE_KEY = 'webtty-theme'
+const STORAGE_KEY = 'mebtty-theme'
 const MODES = ['system', 'dark', 'light']
 
 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')

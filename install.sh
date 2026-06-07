@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# WebTTY - Install / uninstall systemd service
+# MebTTY - Install / uninstall systemd service
 #
 # Usage:
 #   sudo ./install.sh              # Install executable + systemd service
@@ -10,12 +10,12 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-EXEC_SRC="$SCRIPT_DIR/build/webtty"
-EXEC_DEST="/usr/local/bin/webtty"
-SERVICE_SRC="$SCRIPT_DIR/webtty.service"
-SERVICE_DEST="/etc/systemd/system/webtty.service"
-ENV_FILE="/etc/webtty/webtty.env"
-DATA_DIR="/var/lib/webtty"
+EXEC_SRC="$SCRIPT_DIR/build/mebtty"
+EXEC_DEST="/usr/local/bin/mebtty"
+SERVICE_SRC="$SCRIPT_DIR/mebtty.service"
+SERVICE_DEST="/etc/systemd/system/mebtty.service"
+ENV_FILE="/etc/mebtty/mebtty.env"
+DATA_DIR="/var/lib/mebtty"
 
 # Colors
 RED='\033[0;31m'
@@ -60,12 +60,12 @@ install() {
         mkdir -p "$(dirname "$ENV_FILE")"
         SECRET=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
         cat > "$ENV_FILE" <<EOF
-# WebTTY environment configuration
-# Modify and restart: systemctl restart webtty
+# MebTTY environment configuration
+# Modify and restart: systemctl restart mebtty
 
-WEBTTY_SECRET_KEY=$SECRET
-WEBTTY_HOST=0.0.0.0
-WEBTTY_PORT=18888
+MEBTTY_SECRET_KEY=$SECRET
+MEBTTY_HOST=0.0.0.0
+MEBTTY_PORT=18888
 EOF
         chmod 600 "$ENV_FILE"
     else
@@ -79,31 +79,31 @@ EOF
 
     # Enable and start
     systemctl daemon-reload
-    systemctl enable webtty.service
-    systemctl start webtty.service
+    systemctl enable mebtty.service
+    systemctl start mebtty.service
 
     echo ""
     echo -e "${CYAN}========================================${NC}"
-    echo -e "${CYAN}  WebTTY installed and started!${NC}"
+    echo -e "${CYAN}  MebTTY installed and started!${NC}"
     echo -e "${CYAN}${NC}"
     echo -e "${CYAN}  Executable: $EXEC_DEST${NC}"
     echo -e "${CYAN}  Config:     $ENV_FILE${NC}"
     echo -e "${CYAN}  Data:       $DATA_DIR${NC}"
     echo -e "${CYAN}  Web UI:     http://localhost:18888${NC}"
     echo -e "${CYAN}${NC}"
-    echo -e "${CYAN}  systemctl start webtty${NC}"
-    echo -e "${CYAN}  systemctl stop webtty${NC}"
-    echo -e "${CYAN}  systemctl status webtty${NC}"
-    echo -e "${CYAN}  journalctl -u webtty -f${NC}"
+    echo -e "${CYAN}  systemctl start mebtty${NC}"
+    echo -e "${CYAN}  systemctl stop mebtty${NC}"
+    echo -e "${CYAN}  systemctl status mebtty${NC}"
+    echo -e "${CYAN}  journalctl -u mebtty -f${NC}"
     echo -e "${CYAN}========================================${NC}"
 }
 
 uninstall() {
     check_root
 
-    log "Stopping WebTTY service..."
-    systemctl stop webtty.service 2>/dev/null || true
-    systemctl disable webtty.service 2>/dev/null || true
+    log "Stopping MebTTY service..."
+    systemctl stop mebtty.service 2>/dev/null || true
+    systemctl disable mebtty.service 2>/dev/null || true
 
     if [[ -f "$SERVICE_DEST" ]]; then
         log "Removing service file..."
@@ -119,12 +119,12 @@ uninstall() {
 
     warn "Data directory kept: $DATA_DIR"
     warn "Config file kept: $ENV_FILE"
-    log "To remove all data: rm -rf $DATA_DIR /etc/webtty"
+    log "To remove all data: rm -rf $DATA_DIR /etc/mebtty"
     log "Uninstall complete."
 }
 
 print_help() {
-    echo "WebTTY - Install systemd service"
+    echo "MebTTY - Install systemd service"
     echo ""
     echo "Usage: sudo ./install.sh [command]"
     echo ""

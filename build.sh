@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# WebTTY - Build standalone Linux executable
+# MebTTY - Build standalone Linux executable
 #
 # Usage:
 #   ./build.sh              # Build frontend + backend into a single executable
@@ -94,21 +94,21 @@ build_executable() {
     fi
 
     # Run PyInstaller using the spec file
-    pyinstaller --clean --noconfirm webtty.spec
+    pyinstaller --clean --noconfirm mebtty.spec
 
     # Move output to project-level build directory
     mkdir -p "$BUILD_OUTPUT"
-    cp "$BACKEND_DIR/dist/webtty" "$BUILD_OUTPUT/webtty"
-    chmod +x "$BUILD_OUTPUT/webtty"
+    cp "$BACKEND_DIR/dist/mebtty" "$BUILD_OUTPUT/mebtty"
+    chmod +x "$BUILD_OUTPUT/mebtty"
 
     local size
-    size=$(du -h "$BUILD_OUTPUT/webtty" | cut -f1)
+    size=$(du -h "$BUILD_OUTPUT/mebtty" | cut -f1)
 
     echo ""
     echo -e "${CYAN}========================================${NC}"
     echo -e "${CYAN}  Build complete!${NC}"
-    echo -e "${CYAN}  Executable: build/webtty ($size)${NC}"
-    echo -e "${CYAN}  Run:        ./build/webtty${NC}"
+    echo -e "${CYAN}  Executable: build/mebtty ($size)${NC}"
+    echo -e "${CYAN}  Run:        ./build/mebtty${NC}"
     echo -e "${CYAN}  Install:    sudo ./install.sh${NC}"
     echo -e "${CYAN}========================================${NC}"
 }
@@ -124,7 +124,7 @@ clean() {
 }
 
 print_help() {
-    echo "WebTTY - Build standalone executable"
+    echo "MebTTY - Build standalone executable"
     echo ""
     echo "Usage: ./build.sh [command]"
     echo ""
@@ -134,7 +134,7 @@ print_help() {
     echo "  --help     Show this help message"
     echo ""
     echo "Output:"
-    echo "  build/webtty    Standalone executable"
+    echo "  build/mebtty    Standalone executable"
     echo ""
     echo "After building, install with:"
     echo "  sudo ./install.sh"
