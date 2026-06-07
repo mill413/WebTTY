@@ -49,6 +49,11 @@ onMounted(async () => {
     }
   }
 
+  // Auto-open file browser if query param is set
+  if (route.query.files === '1') {
+    showFileBrowser.value = true
+  }
+
   await nextTick()
   terminalPaneRef.value?.focus()
 })

@@ -89,6 +89,17 @@ async function deleteSession(sessionId) {
   }
 }
 
+function openFileBrowser() {
+  if (terminalStore.activeTab) {
+    router.push(`/terminal/${terminalStore.activeTab.sessionId}?files=1`)
+  } else if (terminalStore.tabs.length > 0) {
+    const tab = terminalStore.tabs[0]
+    router.push(`/terminal/${tab.sessionId}?files=1`)
+  } else {
+    router.push('/terminal?files=1')
+  }
+}
+
 function logout() {
   authStore.logout()
   router.push('/login')
@@ -118,6 +129,11 @@ function formatDate(dateStr) {
       </div>
       <div class="top-bar-right">
         <ThemeToggle />
+        <button class="btn-icon" @click="openFileBrowser" :title="t('toolbar.fileBrowser')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+          </svg>
+        </button>
         <div class="user-menu-wrapper" @click.stop>
           <button class="user-label" @click="showUserMenu = !showUserMenu">
             {{ authStore.username }}
