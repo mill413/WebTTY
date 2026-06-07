@@ -291,6 +291,44 @@ function logout() {
         </div>
       </div>
 
+      <!-- Status Bar -->
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>{{ t('settings.statusBar') }}</h3>
+          <p>{{ t('settings.statusBarDesc') }}</p>
+        </div>
+        <div class="setting-control">
+          <label class="switch">
+            <input type="checkbox" :checked="settingsStore.statusBarVisible" @change="settingsStore.toggleStatusBar($event.target.checked)" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Status Bar Items -->
+      <div class="setting-row setting-row-column" v-if="settingsStore.statusBarVisible">
+        <div class="setting-info">
+          <h3>{{ t('settings.statusBarItems') }}</h3>
+          <p>{{ t('settings.statusBarItemsDesc') }}</p>
+        </div>
+        <div class="setting-control-full">
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" :checked="settingsStore.statusBarItems.connection" @change="settingsStore.toggleStatusBarItem('connection', $event.target.checked)" />
+              <span>{{ t('settings.statusItemConnection') }}</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" :checked="settingsStore.statusBarItems.shell" @change="settingsStore.toggleStatusBarItem('shell', $event.target.checked)" />
+              <span>{{ t('settings.statusItemShell') }}</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" :checked="settingsStore.statusBarItems.status" @change="settingsStore.toggleStatusBarItem('status', $event.target.checked)" />
+              <span>{{ t('settings.statusItemStatus') }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- User Avatar -->
       <div class="setting-row">
         <div class="setting-info">
@@ -879,5 +917,74 @@ function logout() {
   background: var(--accent);
   border-color: var(--accent);
   color: white;
+}
+
+/* Toggle switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface-hover);
+  border-radius: 22px;
+  transition: var(--transition);
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.switch input:checked + .slider {
+  background: var(--accent);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+/* Checkbox group */
+.checkbox-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 </style>

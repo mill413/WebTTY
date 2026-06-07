@@ -5,8 +5,7 @@ const props = defineProps({
   shell: { type: String, default: '' },
   status: { type: String, default: '' },
   connectionStatus: { type: String, default: 'disconnected' },
-  cols: { type: Number, default: 80 },
-  rows: { type: Number, default: 24 }
+  items: { type: Object, default: () => ({ connection: true, shell: false, status: false }) }
 })
 
 const { t } = useI18n()
@@ -20,31 +19,26 @@ function getShellName(shellPath) {
 <template>
   <div class="status-bar">
     <div class="status-left">
-      <div class="status-item">
-        <span class="status-dot" :class="connectionStatus"></span>
-        <span>{{ connectionStatus === 'connected' ? t('statusBar.connected') : t('statusBar.disconnected') }}</span>
-      </div>
+      <template v-if="items.shell">
+        <div class="status-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4 17 10 11 4 5" />
+            <line x1="12" y1="19" x2="20" y2="19" />
+          </svg>
+          <span>{{ getShellName(shell) }}</span>
+        </div>
+        <div class="status-divider"></div>
+      </template>
 
-      <div class="status-divider"></div>
-
-      <div class="status-item" v-if="shell">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="4 17 10 11 4 5" />
-          <line x1="12" y1="19" x2="20" y2="19" />
-        </svg>
-        <span>{{ getShellName(shell) }}</span>
-      </div>
-
-      <div class="status-divider" v-if="shell"></div>
-
-      <div class="status-item" v-if="status">
+      <div class="status-item" v-if="items.status && status">
         <span :class="{ 'text-success': status === 'running' }">{{ status }}</span>
       </div>
     </div>
 
     <div class="status-right">
-      <div class="status-item">
-        <span>{{ cols }} x {{ rows }}</span>
+      <div class="status-item" v-if="items.connection">
+        <span class="status-dot" :class="connectionStatus"></span>
+        <span>{{ connectionStatus === 'connected' ? t('statusBar.connected') : t('statusBar.disconnected') }}</span>
       </div>
     </div>
   </div>

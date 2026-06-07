@@ -125,13 +125,13 @@ watch(
       document.title = 'WebTTY - Settings'
     } else if (tab) {
       const title = settingsStore.formatTabTitle(
-        settingsStore.tabTitleFormat,
-        tab.shell,
-        terminalStore.tabs.indexOf(tab) + 1,
-        tab.title,
-        authStore.username,
-        tab.cwd
-      )
+      settingsStore.tabTitleFormat,
+      tab.shell,
+      terminalStore.tabs.indexOf(tab) + 1,
+      tab.title,
+      tab.username,
+      tab.cwd
+    )
       document.title = `WebTTY - ${title}`
     } else {
       document.title = 'WebTTY'
@@ -384,12 +384,11 @@ function logout() {
     </div>
 
     <StatusBar
-      v-if="terminalStore.activeTab && !isSettingsTab"
+      v-if="settingsStore.statusBarVisible && terminalStore.activeTab && !isSettingsTab"
       :shell="terminalStore.activeTab?.shell || ''"
       :status="terminalStore.activeTab?.status || ''"
       :connectionStatus="connectionStatus"
-      :cols="terminalDims.cols"
-      :rows="terminalDims.rows"
+      :items="settingsStore.statusBarItems"
     />
 
     <!-- Shell selector dialog -->

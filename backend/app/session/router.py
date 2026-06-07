@@ -1,5 +1,6 @@
 import logging
 import os
+import pwd
 import shutil
 
 from datetime import datetime
@@ -35,10 +36,25 @@ class SessionResponse(BaseModel):
     status: str
     cols: int
     rows: int
+    username: str = ""
     created_at: datetime
     updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+
+def _get_system_username() -> str:
+    try:
+        return pwd.getpwuid(os.getuid()).pw_name
+    except Exception:
+        return os.environ.get("USER", "unknown")
+
+
+def _session_to_response(session) -> dict:
+    """Convert a session ORM object to a response dict with username."""
+    data = {c.key: getattr(session, c.key) for c in session.__table__.columns}
+    data["username"] = _get_system_username()
+    return data
 
 
 @router.get("", response_model=list[SessionResponse])
@@ -47,7 +63,7 @@ async def list_sessions(
     db: AsyncSession = Depends(get_db),
 ):
     sessions = await SessionService.list_user_sessions(db, user_id=current_user.id)
-    return sessions
+    return [_session_to_response(s) for s in sessions]
 
 
 @router.post("", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
@@ -87,7 +103,7 @@ async def create_session(
 
     # Refresh to get updated status
     session = await SessionService.get_session(db, session.id)
-    return session
+    return _session_to_response(session)
 
 
 @router.get("/shells")
@@ -191,7 +207,7 @@ async def get_session(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied",
         )
-    return session
+    return _session_to_response(session)
 
 
 @router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -269,4 +285,4 @@ async def reconnect_session(
 
     # Refresh to get updated status
     session = await SessionService.get_session(db, session_id)
-    return session
+    return _session_to_response(session)

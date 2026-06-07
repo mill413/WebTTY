@@ -8,6 +8,8 @@ export const useSettingsStore = defineStore('settings', {
     tabTitleFormat: '{shell} #{index}',
     sidebarPosition: 'right',
     sessionTimeout: 0,
+    statusBarVisible: localStorage.getItem('webtty-statusbar-visible') !== 'false',
+    statusBarItems: JSON.parse(localStorage.getItem('webtty-statusbar-items') || '{"connection":true,"shell":false,"status":false}'),
     loaded: false
   }),
 
@@ -62,6 +64,16 @@ export const useSettingsStore = defineStore('settings', {
       let g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount))
       let b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount))
       return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')
+    },
+
+    toggleStatusBar(visible) {
+      this.statusBarVisible = visible
+      localStorage.setItem('webtty-statusbar-visible', visible)
+    },
+
+    toggleStatusBarItem(key, value) {
+      this.statusBarItems[key] = value
+      localStorage.setItem('webtty-statusbar-items', JSON.stringify(this.statusBarItems))
     },
 
     formatTabTitle(template, shell, index, title, user = '', cwd = '') {

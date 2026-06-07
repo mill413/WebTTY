@@ -2,10 +2,8 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../../stores/settings'
-import { useAuthStore } from '../../stores/auth'
 
 const settingsStore = useSettingsStore()
-const authStore = useAuthStore()
 
 const props = defineProps({
   tabs: { type: Array, required: true },
@@ -82,7 +80,7 @@ function getTabDisplayTitle(tab) {
     tab.shell,
     index,
     tab.title,
-    authStore.username,
+    tab.username,
     tab.cwd
   )
 }
