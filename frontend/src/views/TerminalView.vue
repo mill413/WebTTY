@@ -113,8 +113,8 @@ watch(() => route.params.sessionId, (newId) => {
   }
 })
 
-function handleNewTerminal(shell) {
-  terminalStore.createSession(shell)
+function handleNewTerminal() {
+  showShellDialog.value = true
 }
 
 function handleTabSwitch(tabId) {

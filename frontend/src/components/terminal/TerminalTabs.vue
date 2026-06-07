@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
@@ -14,27 +14,6 @@ const { t } = useI18n()
 const editingTabId = ref(null)
 const editingTitle = ref('')
 const dragTabId = ref(null)
-const showShellMenu = ref(false)
-const newBtnRef = ref(null)
-const menuPos = ref({ top: 0, left: 0 })
-const tabBarRef = ref(null)
-
-const shells = [
-  { value: '/bin/bash', label: 'Bash' },
-  { value: '/bin/zsh', label: 'Zsh' },
-  { value: '/usr/bin/fish', label: 'Fish' },
-  { value: '/bin/sh', label: 'SH' }
-]
-
-function closeShellMenu() {
-  showShellMenu.value = false
-}
-
-function onClickOutside(e) {
-  if (showShellMenu.value) {
-    closeShellMenu()
-  }
-}
 
 function handleClick(tabId) {
   if (editingTabId.value !== null) return
@@ -86,25 +65,6 @@ function handleDragEnd() {
   dragTabId.value = null
 }
 
-function toggleShellMenu(e) {
-  e.stopPropagation()
-  if (showShellMenu.value) {
-    showShellMenu.value = false
-    return
-  }
-  const btn = newBtnRef.value
-  if (btn) {
-    const rect = btn.getBoundingClientRect()
-    menuPos.value = { top: rect.bottom + 4, left: rect.left }
-  }
-  showShellMenu.value = true
-}
-
-function selectShell(shell) {
-  emit('new-tab', shell)
-  showShellMenu.value = false
-}
-
 function isSettingsTab(tab) {
   return tab.type === 'settings'
 }
@@ -117,18 +77,10 @@ function getShellIcon(shell) {
   if (s.includes('bash')) return '$'
   return '>'
 }
-
-onMounted(() => {
-  document.addEventListener('click', onClickOutside, true)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', onClickOutside, true)
-})
 </script>
 
 <template>
-  <div ref="tabBarRef" class="tab-bar" @click="showShellMenu = false">
+  <div class="tab-bar">
     <div class="tabs-scroll">
       <div
         v-for="tab in tabs"
@@ -173,7 +125,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="tab-new-wrapper">
-        <button ref="newBtnRef" class="tab-new" @click="toggleShellMenu" :title="t('tabs.newTerminal')">
+        <button class="tab-new" @click="emit('new-tab')" :title="t('tabs.newTerminal')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
@@ -181,19 +133,6 @@ onBeforeUnmount(() => {
         </button>
       </div>
     </div>
-
-    <Teleport to="body">
-      <div v-if="showShellMenu" class="shell-dropdown" :style="{ top: menuPos.top + 'px', left: menuPos.left + 'px' }" @click.stop>
-        <button
-          v-for="shell in shells"
-          :key="shell.value"
-          class="shell-dropdown-item"
-          @click="selectShell(shell.value)"
-        >
-          {{ shell.label }}
-        </button>
-      </div>
-    </Teleport>
   </div>
 </template>
 
