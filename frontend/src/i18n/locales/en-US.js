@@ -101,6 +101,9 @@ export default {
   settings: {
     title: 'Settings',
     back: 'Back',
+    language: 'Language',
+    languageDesc: 'Choose the display language of the application',
+    languageAuto: 'Auto (Follow Browser)',
     colorMode: 'Color Mode',
     colorModeDesc: 'Choose the appearance of the application',
     system: 'System',

@@ -101,6 +101,9 @@ export default {
   settings: {
     title: '设置',
     back: '返回',
+    language: '语言',
+    languageDesc: '选择应用程序的显示语言',
+    languageAuto: '自动（跟随浏览器）',
     colorMode: '颜色模式',
     colorModeDesc: '选择应用程序的外观',
     system: '跟随系统',

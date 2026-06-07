@@ -1,21 +1,37 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '../stores/settings'
 import { useThemeStore } from '../stores/theme'
 import { useAuthStore } from '../stores/auth'
+import { setLocale, resetToBrowserLocale, getSupportedLocales, hasUserLocale } from '../i18n'
 import api from '../services/api'
 
 const props = defineProps({
   embedded: { type: Boolean, default: false }
 })
 
-const { t } = useI18n()
+const { t, locale: i18nLocale } = useI18n()
 const router = useRouter()
 const settingsStore = useSettingsStore()
 const themeStore = useThemeStore()
 const authStore = useAuthStore()
+
+const locales = getSupportedLocales()
+const localeLabels = { 'en-US': 'English', 'zh-CN': '简体中文', 'zh-TW': '繁體中文', 'ja': '日本語' }
+const isAutoLocale = ref(!hasUserLocale())
+const currentLocale = computed(() => isAutoLocale.value ? 'auto' : i18nLocale.value)
+
+function changeLanguage(locale) {
+  if (locale === 'auto') {
+    isAutoLocale.value = true
+    resetToBrowserLocale()
+  } else {
+    isAutoLocale.value = false
+    setLocale(locale)
+  }
+}
 
 const accentPresets = ['#7c3aed', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4']
 const customColor = ref('')
@@ -164,6 +180,20 @@ function logout() {
     </header>
 
     <main class="settings-content">
+      <!-- Language -->
+      <div class="setting-row">
+        <div class="setting-info">
+          <h3>{{ t('settings.language') }}</h3>
+          <p>{{ t('settings.languageDesc') }}</p>
+        </div>
+        <div class="setting-control">
+          <select class="setting-select" :value="currentLocale" @change="changeLanguage($event.target.value)">
+            <option value="auto">{{ t('settings.languageAuto') }}</option>
+            <option v-for="loc in locales" :key="loc" :value="loc">{{ localeLabels[loc] || loc }}</option>
+          </select>
+        </div>
+      </div>
+
       <!-- Color Mode -->
       <div class="setting-row">
         <div class="setting-info">
@@ -595,6 +625,36 @@ function logout() {
   border: 1px dashed var(--border);
   color: var(--subtext);
   pointer-events: none;
+}
+
+/* Select */
+.setting-select {
+  padding: 7px 32px 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color var(--transition);
+}
+
+.setting-select:hover {
+  border-color: var(--accent);
+}
+
+.setting-select:focus {
+  border-color: var(--accent);
+}
+
+.setting-select option {
+  background: var(--surface);
+  color: var(--text);
 }
 
 /* Text input */

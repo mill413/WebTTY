@@ -101,6 +101,9 @@ export default {
   settings: {
     title: '設定',
     back: '戻る',
+    language: '言語',
+    languageDesc: 'アプリケーションの表示言語を選択',
+    languageAuto: '自動（ブラウザに従う）',
     colorMode: 'カラーモード',
     colorModeDesc: 'アプリケーションの外観を選択',
     system: 'システム',

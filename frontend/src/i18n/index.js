@@ -39,8 +39,20 @@ export function setLocale(locale) {
   document.documentElement.setAttribute('lang', locale)
 }
 
+export function resetToBrowserLocale() {
+  localStorage.removeItem('webtty-locale')
+  const locale = detectLocale()
+  i18n.global.locale.value = locale
+  document.documentElement.setAttribute('lang', locale)
+}
+
 export function getSupportedLocales() {
   return SUPPORTED_LOCALES
+}
+
+export function hasUserLocale() {
+  const saved = localStorage.getItem('webtty-locale')
+  return saved && SUPPORTED_LOCALES.includes(saved)
 }
 
 export default i18n
