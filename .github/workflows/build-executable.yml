@@ -1,4 +1,4 @@
-name: Build Debian Package
+name: Build Executable
 
 on:
   push:
@@ -70,49 +70,24 @@ jobs:
           pyinstaller --clean --noconfirm webtty.spec
           chmod +x dist/webtty
 
-      - name: Assemble deb package
+      - name: Prepare release artifact
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          PKG_DIR="webtty_${VERSION}_amd64"
-
-          # Create package directory structure
-          mkdir -p "$PKG_DIR/DEBIAN"
-          mkdir -p "$PKG_DIR/usr/local/bin"
-          mkdir -p "$PKG_DIR/lib/systemd/system"
-
-          # Copy executable
-          cp backend/dist/webtty "$PKG_DIR/usr/local/bin/webtty"
-          chmod 755 "$PKG_DIR/usr/local/bin/webtty"
-
-          # Copy systemd service
-          cp webtty.service "$PKG_DIR/lib/systemd/system/webtty.service"
-          chmod 644 "$PKG_DIR/lib/systemd/system/webtty.service"
-
-          # Copy DEBIAN metadata with version substitution
-          sed "s/\${VERSION}/$VERSION/g" pkg/deb/DEBIAN/control > "$PKG_DIR/DEBIAN/control"
-          cp pkg/deb/DEBIAN/postinst  "$PKG_DIR/DEBIAN/postinst"
-          cp pkg/deb/DEBIAN/prerm     "$PKG_DIR/DEBIAN/prerm"
-          cp pkg/deb/DEBIAN/postrm    "$PKG_DIR/DEBIAN/postrm"
-          chmod 755 "$PKG_DIR/DEBIAN/postinst" "$PKG_DIR/DEBIAN/prerm" "$PKG_DIR/DEBIAN/postrm"
-
-      - name: Build deb package
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          PKG_DIR="webtty_${VERSION}_amd64"
-          dpkg-deb --build --root-owner-group "$PKG_DIR"
-          ls -lh "${PKG_DIR}.deb"
+          cp backend/dist/webtty "webtty-${VERSION}-linux-amd64"
+          chmod +x "webtty-${VERSION}-linux-amd64"
+          ls -lh "webtty-${VERSION}-linux-amd64"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: webtty_${{ steps.version.outputs.version }}_amd64
-          path: webtty_${{ steps.version.outputs.version }}_amd64.deb
+          name: webtty-${{ steps.version.outputs.version }}-linux-amd64
+          path: webtty-${{ steps.version.outputs.version }}-linux-amd64
           retention-days: 30
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: webtty_${{ steps.version.outputs.version }}_amd64.deb
+          files: webtty-${{ steps.version.outputs.version }}-linux-amd64
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, '-') }}
