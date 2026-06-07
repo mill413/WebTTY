@@ -1,0 +1,69 @@
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict
+
+
+# ---- User ----
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    username: str
+    is_active: bool
+    is_admin: bool
+    created_at: datetime
+
+
+# ---- Auth ----
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+# ---- Session ----
+
+class SessionCreate(BaseModel):
+    title: str = ""
+    shell: str = "bash"
+    cwd: Optional[str] = None
+
+
+class SessionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    user_id: str
+    title: str
+    shell: str
+    runtime_type: str
+    status: str
+    cols: int
+    rows: int
+    created_at: datetime
+    updated_at: datetime
+
+
+# ---- Command Log ----
+
+class CommandLogResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    session_id: str
+    command: str
+    risk_level: str
+    created_at: datetime
