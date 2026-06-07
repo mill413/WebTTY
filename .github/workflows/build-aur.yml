@@ -33,6 +33,16 @@ jobs:
           fi
           echo "Tag ${GITHUB_REF_NAME} is on main branch, proceeding."
 
+      - name: Validate tag format
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.dev)?$ ]]; then
+            echo "::error::Invalid tag format '${GITHUB_REF_NAME}'. Allowed formats: vx.y.z or vx.y.z.dev (e.g., v1.2.3, v1.0.0.dev)"
+            exit 1
+          fi
+          echo "Tag format is valid: ${GITHUB_REF_NAME}"
+
       - name: Set version
         id: version
         shell: bash
