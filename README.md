@@ -77,6 +77,7 @@ Deploy with a single script or Docker — and access your server from anywhere.
 ### Deployment & Operations
 
 - **One-Click Deploy** — Single shell script handles dependency checks, build, and server startup
+- **Standalone Executable** — Build a single Linux binary with PyInstaller, install as a systemd service with security hardening and auto-restart
 - **Docker Support** — Multi-stage build with persistent volumes and auto-restart
 - **Session Auto-Cleanup** — Stale sessions cleaned on server restart; expired sessions auto-deleted by configurable timeout
 - **Database Flexibility** — SQLite by default, PostgreSQL supported for production
@@ -160,6 +161,42 @@ docker compose up -d
 ```
 
 Open `http://localhost:8000` and register your first account.
+
+### Standalone Executable (systemd service)
+
+Build a single self-contained binary that includes both the backend and the frontend, then install it as a systemd service.
+
+**Prerequisites:** Python 3.12+, Node.js 18+, npm
+
+```bash
+# Build: compile frontend and package into a single executable
+./build.sh
+
+# Install: copy binary, create data dirs, generate config, register systemd service
+sudo ./install.sh
+```
+
+After installation, WebTTY runs as a managed systemd service with security hardening (`ProtectSystem=strict`, `NoNewPrivileges`, `PrivateTmp`) and automatic restart on failure.
+
+```bash
+sudo systemctl start webtty      # Start the service
+sudo systemctl stop webtty       # Stop the service
+sudo systemctl restart webtty    # Restart the service
+sudo systemctl status webtty     # Check service status
+sudo journalctl -u webtty -f     # View logs
+```
+
+| Path                              | Description                          |
+| --------------------------------- | ------------------------------------ |
+| `/usr/local/bin/webtty`           | Executable binary                    |
+| `/etc/webtty/webtty.env`          | Environment config (auto-generated)  |
+| `/var/lib/webtty/webtty.db`       | SQLite database                      |
+| `/var/lib/webtty/uploads`         | Uploaded files                       |
+
+```bash
+# Uninstall (removes service and binary, keeps data and config)
+sudo ./install.sh --uninstall
+```
 
 ## Configuration
 
@@ -253,6 +290,9 @@ webtty/
 │   │       └── global.css
 │   ├── package.json
 │   └── vite.config.js
+├── build.sh                     # Build standalone executable (PyInstaller)
+├── install.sh                   # Install/uninstall systemd service
+├── webtty.service               # systemd unit file
 ├── Dockerfile                   # Multi-stage Docker build
 ├── docker-compose.yml           # Docker Compose configuration
 ├── deploy.sh                    # One-click deployment script
