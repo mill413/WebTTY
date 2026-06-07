@@ -243,11 +243,11 @@ onBeforeUnmount(() => {
 }
 
 .tab-corner--left {
-  border-bottom-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
 .tab-corner--right {
-  border-bottom-right-radius: 8px;
+  border-top-left-radius: 8px;
 }
 
 .tabs-scroll {
