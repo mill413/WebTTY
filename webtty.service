@@ -1,6 +1,6 @@
 [Unit]
 Description=WebTTY - Self-hosted web terminal
-Documentation=https://github.com/anthropics/webtty
+Documentation=https://github.com/mill413/webtty
 After=network.target
 
 [Service]
@@ -12,7 +12,7 @@ TimeoutStopSec=10
 
 # Environment defaults (override in /etc/webtty/webtty.env)
 Environment=WEBTTY_HOST=0.0.0.0
-Environment=WEBTTY_PORT=8000
+Environment=WEBTTY_PORT=18888
 EnvironmentFile=-/etc/webtty/webtty.env
 
 # Data directories

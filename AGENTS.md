@@ -29,10 +29,10 @@ WebTTY is a self-hosted web terminal platform with a Python backend and a Vue 3 
 
 **Backend** (run from `backend/`, with venv activated):
 - `pip install -r requirements.txt` — Install Python dependencies
-- `uvicorn app.main:app --reload --port 8000` — Run the dev server with auto-reload
+- `uvicorn app.main:app --reload --port 18888` — Run the dev server with auto-reload
 
 **Docker**:
-- `docker compose up --build` — Build and run the full stack on port `8000`
+- `docker compose up --build` — Build and run the full stack on port `18888`
 
 ## Coding Style & Naming Conventions
 

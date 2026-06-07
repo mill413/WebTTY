@@ -46,7 +46,7 @@ pacman 安装钩子脚本，包含：
 
 ```bash
 # 下载预编译的 pkg 文件
-wget https://github.com/anthropics/webtty/releases/download/v1.0.0/webtty-1.0.0-1-x86_64.pkg.tar.zst
+wget https://github.com/mill413/webtty/releases/download/v1.0.0/webtty-1.0.0-1-x86_64.pkg.tar.zst
 
 # 安装
 sudo pacman -U webtty-1.0.0-1-x86_64.pkg.tar.zst
@@ -69,7 +69,7 @@ paru -S webtty
 
 ```bash
 # 克隆项目
-git clone https://github.com/anthropics/webtty.git
+git clone https://github.com/mill413/webtty.git
 cd webtty
 
 # 构建 AUR 包

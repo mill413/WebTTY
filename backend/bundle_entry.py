@@ -30,7 +30,7 @@ def main():
     import uvicorn
 
     host = os.environ.get("WEBTTY_HOST", "0.0.0.0")
-    port = int(os.environ.get("WEBTTY_PORT", "8000"))
+    port = int(os.environ.get("WEBTTY_PORT", "18888"))
 
     uvicorn.run(
         "app.main:app",

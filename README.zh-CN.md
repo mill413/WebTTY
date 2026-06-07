@@ -131,10 +131,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # 启动（同时提供 API 和前端服务）
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --host 0.0.0.0 --port 18888
 ```
 
-打开 `http://localhost:8000` 并注册第一个账户。
+打开 `http://localhost:18888` 并注册第一个账户。
 
 ### Shell 脚本
 
@@ -142,7 +142,7 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ./deploy.sh
 ```
 
-这会自动安装依赖、构建前端并在端口 8000 启动服务器。
+这会自动安装依赖、构建前端并在端口 18888 启动服务器。
 
 ```bash
 ./deploy.sh --status     # 查看服务器状态
@@ -160,7 +160,7 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 docker compose up -d
 ```
 
-打开 `http://localhost:8000` 并注册第一个账户。
+打开 `http://localhost:18888` 并注册第一个账户。
 
 ### 独立可执行程序（systemd 服务）
 
@@ -213,7 +213,7 @@ sudo ./install.sh --uninstall
 | `WEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`   | `7`                                | JWT 刷新令牌有效期                   |
 | `WEBTTY_MAX_UPLOAD_SIZE`             | `104857600`                        | 最大上传大小（字节，100MB）          |
 | `WEBTTY_HOST`                        | `0.0.0.0`                          | 服务器绑定地址                       |
-| `WEBTTY_PORT`                        | `8000`                             | 服务器监听端口                       |
+| `WEBTTY_PORT`                        | `18888`                             | 服务器监听端口                       |
 
 ### 生产环境示例
 
@@ -392,7 +392,7 @@ webtty/
 # 终端 1：后端热重载
 cd backend
 source venv/bin/activate
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 18888
 
 # 终端 2：前端开发服务器，带 API 代理
 cd frontend

@@ -16,7 +16,7 @@ if [ ! -f "$ENV_FILE" ]; then
 
 WEBTTY_SECRET_KEY=$SECRET
 WEBTTY_HOST=0.0.0.0
-WEBTTY_PORT=8000
+WEBTTY_PORT=18888
 EOF
     chmod 600 "$ENV_FILE"
 fi
@@ -33,7 +33,7 @@ echo "  WebTTY installed successfully!"
 echo ""
 echo "  Config:     $ENV_FILE"
 echo "  Data:       $DATA_DIR"
-echo "  Web UI:     http://localhost:8000"
+echo "  Web UI:     http://localhost:18888"
 echo ""
 echo "  systemctl start webtty"
 echo "  systemctl stop webtty"

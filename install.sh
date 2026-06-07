@@ -65,7 +65,7 @@ install() {
 
 WEBTTY_SECRET_KEY=$SECRET
 WEBTTY_HOST=0.0.0.0
-WEBTTY_PORT=8000
+WEBTTY_PORT=18888
 EOF
         chmod 600 "$ENV_FILE"
     else
@@ -89,7 +89,7 @@ EOF
     echo -e "${CYAN}  Executable: $EXEC_DEST${NC}"
     echo -e "${CYAN}  Config:     $ENV_FILE${NC}"
     echo -e "${CYAN}  Data:       $DATA_DIR${NC}"
-    echo -e "${CYAN}  Web UI:     http://localhost:8000${NC}"
+    echo -e "${CYAN}  Web UI:     http://localhost:18888${NC}"
     echo -e "${CYAN}${NC}"
     echo -e "${CYAN}  systemctl start webtty${NC}"
     echo -e "${CYAN}  systemctl stop webtty${NC}"

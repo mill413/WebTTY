@@ -92,20 +92,25 @@ onMounted(async () => {
     const sessionId = route.params.sessionId
     const existing = terminalStore.tabs.find((t) => t.sessionId === sessionId)
     if (!existing) {
-      terminalStore.addTabForSession(sessionId, `Session ${sessionId}`)
+      // Reconnect to ensure runtime exists before opening WebSocket
+      try {
+        await terminalStore.reconnectSession(sessionId)
+      } catch {
+        // Fallback: if reconnect fails, still create tab (user can retry)
+        terminalStore.addTabForSession(sessionId, `Session ${sessionId}`)
+      }
     } else {
       terminalStore.activeTabId = existing.id
     }
   } else if (terminalStore.sessions.length > 0) {
-    // Auto-create tabs for all existing sessions
-    for (const session of terminalStore.sessions) {
+    // Auto-create tabs only for sessions with active runtimes
+    const runningSessions = terminalStore.sessions.filter((s) => s.status === 'running')
+    for (const session of runningSessions) {
       terminalStore.addTabForSession(session.id, session.title || `${session.shell} session`, session.shell)
     }
-    // Set first running session as active, or the first session
-    const runningSession = terminalStore.sessions.find((s) => s.status === 'running')
-    if (runningSession) {
-      const runningTab = terminalStore.tabs.find((t) => t.sessionId === runningSession.id)
-      if (runningTab) terminalStore.activeTabId = runningTab.id
+    if (runningSessions.length > 0) {
+      const firstRunningTab = terminalStore.tabs.find((t) => t.sessionId === runningSessions[0].id)
+      if (firstRunningTab) terminalStore.activeTabId = firstRunningTab.id
     }
   }
 
@@ -140,13 +145,17 @@ watch(
   { immediate: true }
 )
 
-watch(() => route.params.sessionId, (newId) => {
+watch(() => route.params.sessionId, async (newId) => {
   if (newId) {
     const existing = terminalStore.tabs.find((t) => t.sessionId === newId)
     if (existing) {
       terminalStore.activeTabId = existing.id
     } else {
-      terminalStore.addTabForSession(newId, `Session ${newId}`)
+      try {
+        await terminalStore.reconnectSession(newId)
+      } catch {
+        terminalStore.addTabForSession(newId, `Session ${newId}`)
+      }
     }
   }
 })

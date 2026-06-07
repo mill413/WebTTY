@@ -131,10 +131,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Start (serves both API and frontend)
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --host 0.0.0.0 --port 18888
 ```
 
-Open `http://localhost:8000` and register your first account.
+Open `http://localhost:18888` and register your first account.
 
 ### Shell Script
 
@@ -142,7 +142,7 @@ Open `http://localhost:8000` and register your first account.
 ./deploy.sh
 ```
 
-This will automatically install dependencies, build the frontend and start the server on port 8000.
+This will automatically install dependencies, build the frontend and start the server on port 18888.
 
 ```bash
 ./deploy.sh --status     # Check server status
@@ -160,7 +160,7 @@ This will automatically install dependencies, build the frontend and start the s
 docker compose up -d
 ```
 
-Open `http://localhost:8000` and register your first account.
+Open `http://localhost:18888` and register your first account.
 
 ### Standalone Executable (systemd service)
 
@@ -206,7 +206,7 @@ Install WebTTY as a native Arch Linux package using pacman.
 
 ```bash
 # Download the pre-built package
-wget https://github.com/anthropics/webtty/releases/download/v1.0.0/webtty-1.0.0-1-x86_64.pkg.tar.zst
+wget https://github.com/mill413/webtty/releases/download/v1.0.0/webtty-1.0.0-1-x86_64.pkg.tar.zst
 
 # Install
 sudo pacman -U webtty-1.0.0-1-x86_64.pkg.tar.zst
@@ -248,7 +248,7 @@ All settings are configured via environment variables (prefix: `WEBTTY_`):
 | `WEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`     | `7`                                    | JWT refresh token lifetime                   |
 | `WEBTTY_MAX_UPLOAD_SIZE`               | `104857600`                            | Max upload size in bytes (100MB)             |
 | `WEBTTY_HOST`                          | `0.0.0.0`                              | Server bind address                          |
-| `WEBTTY_PORT`                          | `8000`                                 | Server listen port                           |
+| `WEBTTY_PORT`                          | `18888`                                 | Server listen port                           |
 
 ### Production Example
 
@@ -437,7 +437,7 @@ The terminal uses a custom binary protocol for efficiency:
 # Terminal 1: Backend with hot reload
 cd backend
 source venv/bin/activate
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 18888
 
 # Terminal 2: Frontend dev server with API proxy
 cd frontend

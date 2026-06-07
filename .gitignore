@@ -52,3 +52,4 @@ webtty_*_amd64/
 # Arch Linux packages
 *.pkg.tar.zst
 aur-build/
+aur-publish/
