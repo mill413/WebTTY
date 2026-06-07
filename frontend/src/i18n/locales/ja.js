@@ -45,7 +45,16 @@ export default {
     noActiveDesc: '新しいターミナルセッションを作成して開始します',
     newTerminal: '新しいターミナル',
     home: 'ホーム',
-    logout: 'ログアウト'
+    logout: 'ログアウト',
+    welcome: 'ようこそ',
+    welcomeSubtitle: '新しいターミナルを作成して始めましょう。',
+    quickStart: 'クイックスタート',
+    tipNew: 'タブバーの + ボタンまたは下のボタンをクリックしてターミナルを作成',
+    tipSwitch: 'タブをクリックしてターミナルを切り替え',
+    tipRename: 'タブをダブルクリックして名前を変更',
+    tipClose: 'タブを閉じるとセッションが自動で削除されます',
+    tipFiles: 'フォルダアイコンをクリックしてファイルを閲覧',
+    tipSettings: 'アバターをクリックして設定を開く'
   },
   toolbar: {
     new: '新規',

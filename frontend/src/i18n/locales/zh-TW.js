@@ -45,7 +45,16 @@ export default {
     noActiveDesc: '建立一個新的終端機工作階段以開始',
     newTerminal: '新建終端機',
     home: '首頁',
-    logout: '登出'
+    logout: '登出',
+    welcome: '歡迎',
+    welcomeSubtitle: '建立一個新終端機來開始吧。',
+    quickStart: '快速上手',
+    tipNew: '點擊分頁列的 + 按鈕或下方按鈕建立終端機',
+    tipSwitch: '點擊分頁切換終端機',
+    tipRename: '雙擊分頁可重新命名',
+    tipClose: '關閉分頁會自動刪除對應的工作階段',
+    tipFiles: '點擊資料夾圖示瀏覽檔案',
+    tipSettings: '點擊頭像進入設定'
   },
   toolbar: {
     new: '新建',

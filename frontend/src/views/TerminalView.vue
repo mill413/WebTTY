@@ -39,14 +39,6 @@ const shells = [
   { value: '/bin/sh', label: 'SH', icon: '📟' }
 ]
 
-const runningSessions = computed(() =>
-  terminalStore.sessions.filter((s) => s.status === 'running')
-)
-
-const recentSessions = computed(() =>
-  terminalStore.sessions.slice(0, 10)
-)
-
 onMounted(async () => {
   if (!authStore.user) {
     await authStore.fetchUser()
@@ -172,34 +164,6 @@ async function createNewSession() {
   }
 }
 
-async function reconnectToSession(sessionId) {
-  try {
-    await terminalStore.reconnectSession(sessionId)
-  } catch (err) {
-    console.error('Failed to reconnect:', err)
-  }
-}
-
-async function deleteSession(sessionId) {
-  if (!confirm(t('home.confirmDelete'))) return
-  try {
-    await terminalStore.deleteSession(sessionId)
-  } catch (err) {
-    console.error('Failed to delete session:', err)
-  }
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
 function goHome() {
   terminalStore.activeTabId = null
   router.push('/terminal')
@@ -297,97 +261,81 @@ function logout() {
         />
         <!-- Welcome / empty state -->
         <div v-else class="welcome-page">
-          <section class="welcome-section">
-            <h1>{{ t('home.welcome') }} <span class="accent">{{ authStore.username }}</span></h1>
-            <p class="text-subtext">{{ t('home.subtitle') }}</p>
-          </section>
-
-          <section class="stats-row">
-            <div class="stat-card">
-              <div class="stat-value">{{ terminalStore.sessions.length }}</div>
-              <div class="stat-label text-subtext">{{ t('home.totalSessions') }}</div>
+          <div class="welcome-hero">
+            <div class="welcome-logo">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="4 17 10 11 4 5" />
+                <line x1="12" y1="19" x2="20" y2="19" />
+              </svg>
             </div>
-            <div class="stat-card">
-              <div class="stat-value text-success">{{ runningSessions.length }}</div>
-              <div class="stat-label text-subtext">{{ t('home.running') }}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">{{ terminalStore.tabs.length }}</div>
-              <div class="stat-label text-subtext">{{ t('home.openTabs') }}</div>
-            </div>
-          </section>
-
-          <section class="actions-section">
+            <h1>{{ t('terminal.welcome') }}, <span class="accent">{{ authStore.username }}</span></h1>
+            <p class="text-subtext">{{ t('terminal.welcomeSubtitle') }}</p>
             <button class="btn-new-terminal" @click="showShellDialog = true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              {{ t('home.newTerminal') }}
+              {{ t('terminal.newTerminal') }}
             </button>
-          </section>
+          </div>
 
-          <section v-if="runningSessions.length > 0" class="sessions-section">
-            <h2>{{ t('home.runningSessions') }}</h2>
-            <div class="session-list">
-              <div
-                v-for="session in runningSessions"
-                :key="session.id"
-                class="session-card session-running"
-                @click="reconnectToSession(session.id)"
-              >
-                <div class="session-info">
-                  <div class="session-title">
-                    <span class="status-dot running"></span>
-                    {{ session.title || session.shell }}
-                  </div>
-                  <div class="session-meta text-subtext">
-                    {{ session.shell }} &middot; {{ formatDate(session.created_at) }}
-                  </div>
-                </div>
-                <div class="session-action">
-                  <span class="badge-running">{{ t('home.running') }}</span>
-                </div>
-                <button class="btn-delete-session" @click.stop="deleteSession(session.id)" :title="t('home.deleteSession')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+          <div class="quick-start">
+            <h3>{{ t('terminal.quickStart') }}</h3>
+            <div class="tips-grid">
+              <div class="tip-item">
+                <div class="tip-icon tip-icon-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
-                </button>
+                </div>
+                <div class="tip-text">{{ t('terminal.tipNew') }}</div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon tip-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <line x1="8" y1="4" x2="8" y2="20" />
+                  </svg>
+                </div>
+                <div class="tip-text">{{ t('terminal.tipSwitch') }}</div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon tip-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                  </svg>
+                </div>
+                <div class="tip-text">{{ t('terminal.tipRename') }}</div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon tip-icon-warning">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </div>
+                <div class="tip-text">{{ t('terminal.tipClose') }}</div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon tip-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                  </svg>
+                </div>
+                <div class="tip-text">{{ t('terminal.tipFiles') }}</div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-icon tip-icon-info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                  </svg>
+                </div>
+                <div class="tip-text">{{ t('terminal.tipSettings') }}</div>
               </div>
             </div>
-          </section>
-
-          <section v-if="recentSessions.length > 0" class="sessions-section">
-            <h2>{{ t('home.recentSessions') }}</h2>
-            <div class="session-list">
-              <div
-                v-for="session in recentSessions"
-                :key="session.id"
-                class="session-card"
-                @click="reconnectToSession(session.id)"
-              >
-                <div class="session-info">
-                  <div class="session-title">
-                    <span class="status-dot" :class="session.status"></span>
-                    {{ session.title || session.shell }}
-                  </div>
-                  <div class="session-meta text-subtext">
-                    {{ session.shell }} &middot; {{ formatDate(session.created_at) }}
-                  </div>
-                </div>
-                <div class="session-action text-subtext">
-                  {{ session.status || 'detached' }}
-                </div>
-                <button class="btn-delete-session" @click.stop="deleteSession(session.id)" :title="t('home.deleteSession')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </section>
+          </div>
         </div>
       </div>
       <FileBrowser
@@ -620,63 +568,51 @@ function logout() {
 .welcome-page {
   height: 100%;
   overflow-y: auto;
-  padding: 40px;
-  max-width: 900px;
+  padding: 60px 40px;
+  max-width: 640px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
 }
 
-.welcome-section {
-  margin-bottom: 32px;
+.welcome-hero {
+  text-align: center;
+  margin-bottom: 48px;
 }
 
-.welcome-section h1 {
-  font-size: 28px;
+.welcome-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+
+.welcome-hero h1 {
+  font-size: 24px;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .accent {
   color: var(--accent);
 }
 
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 13px;
-}
-
-.actions-section {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 40px;
+.welcome-hero p {
+  font-size: 14px;
+  margin-bottom: 24px;
 }
 
 .btn-new-terminal {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: 6px;
+  padding: 10px 20px;
   background: var(--accent);
   color: white;
   border: none;
@@ -684,102 +620,68 @@ function logout() {
   font-size: 14px;
   font-weight: 600;
   transition: background var(--transition);
+  cursor: pointer;
 }
 
 .btn-new-terminal:hover {
   background: var(--accent-hover);
 }
 
-.sessions-section {
-  margin-bottom: 32px;
-}
-
-.sessions-section h2 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.session-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.session-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
+.quick-start {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all var(--transition);
+  border-radius: var(--radius-lg);
+  padding: 24px;
 }
 
-.session-card:hover {
-  background: var(--surface-hover);
-  border-color: var(--accent);
+.quick-start h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
 }
 
-.session-title {
+.tips-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tip-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  margin-bottom: 2px;
+  gap: 12px;
 }
 
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--overlay);
-}
-
-.status-dot.running {
-  background: var(--success);
-  box-shadow: 0 0 6px rgba(166, 227, 161, 0.4);
-}
-
-.session-meta {
-  font-size: 12px;
-  padding-left: 16px;
-}
-
-.session-action {
-  font-size: 13px;
-}
-
-.badge-running {
-  display: inline-block;
-  padding: 2px 10px;
-  background: rgba(166, 227, 161, 0.12);
-  color: var(--success);
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.btn-delete-session {
+.tip-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius);
-  color: var(--subtext);
-  cursor: pointer;
-  transition: all var(--transition);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   flex-shrink: 0;
 }
 
-.btn-delete-session:hover {
-  background: rgba(243, 139, 168, 0.15);
+.tip-icon-primary {
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--accent);
+}
+
+.tip-icon-info {
+  background: var(--bg);
+  color: var(--subtext);
+}
+
+.tip-icon-warning {
+  background: rgba(243, 139, 168, 0.1);
   color: var(--error);
+}
+
+.tip-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
 }
 
 /* Shell dialog */

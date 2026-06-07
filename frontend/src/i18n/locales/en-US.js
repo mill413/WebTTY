@@ -45,7 +45,16 @@ export default {
     noActiveDesc: 'Create a new terminal session to get started',
     newTerminal: 'New Terminal',
     home: 'Home',
-    logout: 'Logout'
+    logout: 'Logout',
+    welcome: 'Welcome',
+    welcomeSubtitle: 'Get started by creating a new terminal session.',
+    quickStart: 'Quick Start',
+    tipNew: 'Click the + button or the button below to create a terminal',
+    tipSwitch: 'Click a tab to switch between terminals',
+    tipRename: 'Double-click a tab to rename it',
+    tipClose: 'Close a tab to delete the session',
+    tipFiles: 'Click the folder icon to browse files',
+    tipSettings: 'Click your avatar for settings'
   },
   toolbar: {
     new: 'New',

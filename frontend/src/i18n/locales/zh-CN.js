@@ -45,7 +45,16 @@ export default {
     noActiveDesc: '创建一个新的终端会话以开始',
     newTerminal: '新建终端',
     home: '主页',
-    logout: '退出登录'
+    logout: '退出登录',
+    welcome: '欢迎',
+    welcomeSubtitle: '创建一个新终端来开始吧。',
+    quickStart: '快速上手',
+    tipNew: '点击标签栏的 + 按钮或下方按钮创建终端',
+    tipSwitch: '点击标签页切换终端',
+    tipRename: '双击标签页可重命名',
+    tipClose: '关闭标签页会自动删除对应的会话',
+    tipFiles: '点击文件夹图标浏览文件',
+    tipSettings: '点击头像进入设置'
   },
   toolbar: {
     new: '新建',
