@@ -1,0 +1,36 @@
+[Unit]
+Description=WebTTY - Self-hosted web terminal
+Documentation=https://github.com/anthropics/webtty
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/webtty
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+
+# Environment defaults (override in /etc/webtty/webtty.env)
+Environment=WEBTTY_HOST=0.0.0.0
+Environment=WEBTTY_PORT=8000
+EnvironmentFile=-/etc/webtty/webtty.env
+
+# Data directories
+StateDirectory=webtty
+LogsDirectory=webtty
+Environment=WEBTTY_DATABASE_URL=sqlite+aiosqlite:////var/lib/webtty/webtty.db
+Environment=WEBTTY_UPLOAD_DIR=/var/lib/webtty/uploads
+
+# Logging to systemd journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=webtty
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/webtty
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
