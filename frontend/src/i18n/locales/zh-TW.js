@@ -1,6 +1,6 @@
 export default {
   login: {
-    title: 'WebTTY',
+    title: 'MebTTY',
     signIn: '登入您的帳戶',
     signUp: '建立新帳戶',
     username: '使用者名稱',

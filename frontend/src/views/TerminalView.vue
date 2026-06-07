@@ -122,7 +122,7 @@ watch(
   [() => terminalStore.activeTab, () => settingsStore.tabTitleFormat],
   ([tab]) => {
     if (tab?.type === 'settings') {
-      document.title = 'WebTTY - Settings'
+      document.title = 'MebTTY - Settings'
     } else if (tab) {
       const title = settingsStore.formatTabTitle(
       settingsStore.tabTitleFormat,
@@ -132,9 +132,9 @@ watch(
       tab.username,
       tab.cwd
     )
-      document.title = `WebTTY - ${title}`
+      document.title = `MebTTY - ${title}`
     } else {
-      document.title = 'WebTTY'
+      document.title = 'MebTTY'
     }
   },
   { immediate: true }
@@ -223,7 +223,7 @@ function logout() {
             <line x1="12" y1="19" x2="20" y2="19" />
           </svg>
         </button>
-        <span class="header-brand">WebTTY</span>
+        <span class="header-brand">MebTTY</span>
       </div>
       <div class="header-tabs">
         <TerminalTabs

@@ -3,13 +3,13 @@ import api from '../services/api'
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    themeMode: localStorage.getItem('webtty-theme') || 'system',
-    accentColor: localStorage.getItem('webtty-accent') || '#7c3aed',
+    themeMode: localStorage.getItem('mebtty-theme') || 'system',
+    accentColor: localStorage.getItem('mebtty-accent') || '#7c3aed',
     tabTitleFormat: '{shell} #{index}',
     sidebarPosition: 'right',
     sessionTimeout: 0,
-    statusBarVisible: localStorage.getItem('webtty-statusbar-visible') !== 'false',
-    statusBarItems: JSON.parse(localStorage.getItem('webtty-statusbar-items') || '[{"key":"shell","visible":false,"position":"left","order":0},{"key":"status","visible":false,"position":"left","order":1},{"key":"connection","visible":true,"position":"right","order":0}]'),
+    statusBarVisible: localStorage.getItem('mebtty-statusbar-visible') !== 'false',
+    statusBarItems: JSON.parse(localStorage.getItem('mebtty-statusbar-items') || '[{"key":"shell","visible":false,"position":"left","order":0},{"key":"status","visible":false,"position":"left","order":1},{"key":"connection","visible":true,"position":"right","order":0}]'),
     loaded: false
   }),
 
@@ -58,7 +58,7 @@ export const useSettingsStore = defineStore('settings', {
       // Generate a slightly darker hover color
       const hover = this.adjustBrightness(this.accentColor, -20)
       root.style.setProperty('--accent-hover', hover)
-      localStorage.setItem('webtty-accent', this.accentColor)
+      localStorage.setItem('mebtty-accent', this.accentColor)
     },
 
     adjustBrightness(hex, amount) {
@@ -72,7 +72,7 @@ export const useSettingsStore = defineStore('settings', {
 
     toggleStatusBar(visible) {
       this.statusBarVisible = visible
-      localStorage.setItem('webtty-statusbar-visible', visible)
+      localStorage.setItem('mebtty-statusbar-visible', visible)
     },
 
     toggleStatusBarItemVisible(key, visible) {
@@ -113,7 +113,7 @@ export const useSettingsStore = defineStore('settings', {
     },
 
     saveStatusBarItems() {
-      localStorage.setItem('webtty-statusbar-items', JSON.stringify(this.statusBarItems))
+      localStorage.setItem('mebtty-statusbar-items', JSON.stringify(this.statusBarItems))
     },
 
     formatTabTitle(template, shell, index, title, user = '', cwd = '') {

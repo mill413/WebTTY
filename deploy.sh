@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# WebTTY - One-click deployment script
+# MebTTY - One-click deployment script
 #
 # Usage:
 #   ./deploy.sh              # Build and start
@@ -19,8 +19,8 @@ FRONTEND_DIR="$SCRIPT_DIR/frontend"
 VENV_DIR="$BACKEND_DIR/venv"
 DATA_DIR="$BACKEND_DIR/data"
 ENV_FILE="$SCRIPT_DIR/.env"
-PID_FILE="$SCRIPT_DIR/.webtty.pid"
-LOG_FILE="$SCRIPT_DIR/webtty.log"
+PID_FILE="$SCRIPT_DIR/.mebtty.pid"
+LOG_FILE="$SCRIPT_DIR/mebtty.log"
 
 # Load .env file if exists
 if [[ -f "$ENV_FILE" ]]; then
@@ -30,8 +30,8 @@ if [[ -f "$ENV_FILE" ]]; then
     set +a
 fi
 
-HOST="${WEBTTY_HOST:-0.0.0.0}"
-PORT="${WEBTTY_PORT:-8000}"
+HOST="${MEBTTY_HOST:-0.0.0.0}"
+PORT="${MEBTTY_PORT:-8000}"
 
 # Required minimum versions
 MIN_PYTHON_MAJOR=3
@@ -46,9 +46,9 @@ CYAN='\033[0;36m'
 DIM='\033[2m'
 NC='\033[0m'
 
-log()  { echo -e "${GREEN}[WebTTY]${NC} $*"; }
-warn() { echo -e "${YELLOW}[WebTTY]${NC} $*"; }
-err()  { echo -e "${RED}[WebTTY]${NC} $*" >&2; }
+log()  { echo -e "${GREEN}[MebTTY]${NC} $*"; }
+warn() { echo -e "${YELLOW}[MebTTY]${NC} $*"; }
+err()  { echo -e "${RED}[MebTTY]${NC} $*" >&2; }
 dim()  { echo -e "${DIM}$*${NC}"; }
 
 # ── Helpers ──────────────────────────────────────────────────────
@@ -103,7 +103,7 @@ check_port_available() {
 
 ensure_env_secret() {
     # Persist a generated secret key to .env so it survives restarts
-    if [[ -z "${WEBTTY_SECRET_KEY:-}" ]]; then
+    if [[ -z "${MEBTTY_SECRET_KEY:-}" ]]; then
         local key
         key=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
         mkdir -p "$(dirname "$ENV_FILE")"
@@ -111,8 +111,8 @@ ensure_env_secret() {
             echo "" >> "$ENV_FILE"
         fi
         echo "# Auto-generated JWT secret (remove to regenerate)" >> "$ENV_FILE"
-        echo "WEBTTY_SECRET_KEY=$key" >> "$ENV_FILE"
-        export WEBTTY_SECRET_KEY="$key"
+        echo "MEBTTY_SECRET_KEY=$key" >> "$ENV_FILE"
+        export MEBTTY_SECRET_KEY="$key"
         log "Generated and persisted secret key to .env"
     fi
 }
@@ -209,18 +209,18 @@ start_server() {
             fi
         fi
         if ! check_port_available; then
-            err "Port $PORT is already in use. Set WEBTTY_PORT to a different port or stop the other process."
+            err "Port $PORT is already in use. Set MEBTTY_PORT to a different port or stop the other process."
             exit 1
         fi
     fi
 
-    export WEBTTY_STATIC_DIR="$FRONTEND_DIR/dist"
-    export WEBTTY_DATABASE_URL="${WEBTTY_DATABASE_URL:-sqlite+aiosqlite:///$DATA_DIR/webtty.db}"
+    export MEBTTY_STATIC_DIR="$FRONTEND_DIR/dist"
+    export MEBTTY_DATABASE_URL="${MEBTTY_DATABASE_URL:-sqlite+aiosqlite:///$DATA_DIR/mebtty.db}"
     ensure_env_secret
 
-    log "Starting WebTTY server on $HOST:$PORT..."
-    dim "  Frontend: $WEBTTY_STATIC_DIR"
-    dim "  Database: $WEBTTY_DATABASE_URL"
+    log "Starting MebTTY server on $HOST:$PORT..."
+    dim "  Frontend: $MEBTTY_STATIC_DIR"
+    dim "  Database: $MEBTTY_DATABASE_URL"
 
     nohup python3 -m uvicorn app.main:app \
         --host "$HOST" \
@@ -236,7 +236,7 @@ start_server() {
         pid=$(cat "$PID_FILE")
         echo ""
         echo -e "${CYAN}========================================${NC}"
-        echo -e "${CYAN}  WebTTY is running!${NC}"
+        echo -e "${CYAN}  MebTTY is running!${NC}"
         echo -e "${CYAN}  Open:   http://localhost:$PORT${NC}"
         echo -e "${CYAN}  PID:    $pid${NC}"
         echo -e "${CYAN}  Log:    $LOG_FILE${NC}"
@@ -302,7 +302,7 @@ show_status() {
     if is_server_running; then
         local pid
         pid=$(get_server_pid)
-        echo -e "${GREEN}●${NC} WebTTY is running"
+        echo -e "${GREEN}●${NC} MebTTY is running"
         echo -e "  PID:    $pid"
         echo -e "  URL:    http://localhost:$PORT"
         echo -e "  Log:    $LOG_FILE"
@@ -314,7 +314,7 @@ show_status() {
             echo -e "  Health: ${YELLOW}unreachable${NC}"
         fi
     else
-        echo -e "${RED}●${NC} WebTTY is not running"
+        echo -e "${RED}●${NC} MebTTY is not running"
         if [[ -f "$PID_FILE" ]]; then
             warn "Stale PID file found. Run ./deploy.sh --stop to clean up."
         fi
@@ -336,7 +336,7 @@ restart_server() {
 }
 
 update_and_redeploy() {
-    log "Updating WebTTY..."
+    log "Updating MebTTY..."
 
     # Check if we're in a git repo
     if ! command -v git >/dev/null 2>&1; then
@@ -373,7 +373,7 @@ docker_deploy() {
     log "Docker containers started."
     echo ""
     echo -e "${CYAN}========================================${NC}"
-    echo -e "${CYAN}  WebTTY is running (Docker)!${NC}"
+    echo -e "${CYAN}  MebTTY is running (Docker)!${NC}"
     echo -e "${CYAN}  Open:   http://localhost:8000${NC}"
     echo -e "${CYAN}  Stop:   ./deploy.sh --docker-stop${NC}"
     echo -e "${CYAN}  Logs:   docker compose logs -f${NC}"
@@ -388,7 +388,7 @@ docker_stop() {
 }
 
 print_help() {
-    echo "WebTTY - Self-hosted web terminal"
+    echo "MebTTY - Self-hosted web terminal"
     echo ""
     echo "Usage: ./deploy.sh [command]"
     echo ""
@@ -404,16 +404,16 @@ print_help() {
     echo "  --help, -h     Show this help message"
     echo ""
     echo "Environment variables (or .env file):"
-    echo "  WEBTTY_HOST              Bind address          (default: 0.0.0.0)"
-    echo "  WEBTTY_PORT              Listen port            (default: 8000)"
-    echo "  WEBTTY_SECRET_KEY        JWT secret             (default: auto-generated)"
-    echo "  WEBTTY_DATABASE_URL      Database URL           (default: SQLite in data/)"
-    echo "  WEBTTY_UPLOAD_DIR        Upload directory       (default: ./uploads)"
-    echo "  WEBTTY_MAX_UPLOAD_SIZE   Max upload size bytes  (default: 104857600)"
+    echo "  MEBTTY_HOST              Bind address          (default: 0.0.0.0)"
+    echo "  MEBTTY_PORT              Listen port            (default: 8000)"
+    echo "  MEBTTY_SECRET_KEY        JWT secret             (default: auto-generated)"
+    echo "  MEBTTY_DATABASE_URL      Database URL           (default: SQLite in data/)"
+    echo "  MEBTTY_UPLOAD_DIR        Upload directory       (default: ./uploads)"
+    echo "  MEBTTY_MAX_UPLOAD_SIZE   Max upload size bytes  (default: 104857600)"
     echo ""
     echo "Examples:"
     echo "  ./deploy.sh                        # Quick start"
-    echo "  WEBTTY_PORT=3000 ./deploy.sh       # Start on port 3000"
+    echo "  MEBTTY_PORT=3000 ./deploy.sh       # Start on port 3000"
     echo "  ./deploy.sh --status               # Check server status"
 }
 

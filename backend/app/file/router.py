@@ -60,7 +60,7 @@ def _validate_path(user_id: str, session_id: str, relative_path: str) -> pathlib
 def _get_browse_root(user_id: str) -> pathlib.Path:
     """Get the root directory for file browsing."""
     # Default to user's home directory, or use configured root
-    browse_root = os.environ.get("WEBTTY_BROWSE_ROOT", os.path.expanduser("~"))
+    browse_root = os.environ.get("MEBTTY_BROWSE_ROOT", os.path.expanduser("~"))
     return pathlib.Path(browse_root).resolve()
 
 

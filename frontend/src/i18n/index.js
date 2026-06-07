@@ -7,7 +7,7 @@ import ja from './locales/ja'
 const SUPPORTED_LOCALES = ['en-US', 'zh-CN', 'zh-TW', 'ja']
 
 function detectLocale() {
-  const saved = localStorage.getItem('webtty-locale')
+  const saved = localStorage.getItem('mebtty-locale')
   if (saved && SUPPORTED_LOCALES.includes(saved)) return saved
 
   const browserLang = navigator.language
@@ -35,12 +35,12 @@ const i18n = createI18n({
 
 export function setLocale(locale) {
   i18n.global.locale.value = locale
-  localStorage.setItem('webtty-locale', locale)
+  localStorage.setItem('mebtty-locale', locale)
   document.documentElement.setAttribute('lang', locale)
 }
 
 export function resetToBrowserLocale() {
-  localStorage.removeItem('webtty-locale')
+  localStorage.removeItem('mebtty-locale')
   const locale = detectLocale()
   i18n.global.locale.value = locale
   document.documentElement.setAttribute('lang', locale)
@@ -51,7 +51,7 @@ export function getSupportedLocales() {
 }
 
 export function hasUserLocale() {
-  const saved = localStorage.getItem('webtty-locale')
+  const saved = localStorage.getItem('mebtty-locale')
   return saved && SUPPORTED_LOCALES.includes(saved)
 }
 

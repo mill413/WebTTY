@@ -57,7 +57,7 @@ async function handleSubmit() {
             <line x1="12" y1="19" x2="20" y2="19" />
           </svg>
         </div>
-        <h1>WebTTY</h1>
+        <h1>MebTTY</h1>
         <p class="subtitle">{{ isLogin ? t('login.signIn') : t('login.signUp') }}</p>
       </div>
 

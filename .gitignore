@@ -41,6 +41,6 @@ Thumbs.db
 *.log
 
 # Runtime
-.webtty.pid
+.mebtty.pid
 backend/data/
 backend/uploads/

@@ -31,9 +31,9 @@ COPY --from=frontend-builder /build/dist /app/frontend/dist
 RUN mkdir -p /app/data /app/uploads
 
 # Environment
-ENV WEBTTY_STATIC_DIR=/app/frontend/dist
-ENV WEBTTY_DATABASE_URL=sqlite+aiosqlite:////app/data/webtty.db
-ENV WEBTTY_UPLOAD_DIR=/app/uploads
+ENV MEBTTY_STATIC_DIR=/app/frontend/dist
+ENV MEBTTY_DATABASE_URL=sqlite+aiosqlite:////app/data/mebtty.db
+ENV MEBTTY_UPLOAD_DIR=/app/uploads
 
 EXPOSE 8000
 

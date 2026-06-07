@@ -1,4 +1,4 @@
-# WebTTY
+# MebTTY
 
 <p align="center">
   <strong>A self-hosted web terminal that brings the full power of your server to any browser.</strong><br>
@@ -17,7 +17,7 @@
 
 ---
 
-WebTTY turns any modern browser into a fully-featured terminal. Built with **FastAPI** and **Vue 3**, it provides real PTY sessions with support for bash, zsh, fish, nushell and more — including oh-my-zsh themes and interactive TUI programs like vim, htop, and less.
+MebTTY turns any modern browser into a fully-featured terminal. Built with **FastAPI** and **Vue 3**, it provides real PTY sessions with support for bash, zsh, fish, nushell and more — including oh-my-zsh themes and interactive TUI programs like vim, htop, and less.
 
 A built-in **file browser** lets you browse, upload, download, rename, and delete files alongside your terminal. A **Catppuccin-themed** UI with dark/light modes, customizable accent colors, multi-tab support, and four languages (English, 简体中文, 繁體中文, 日本語) make it pleasant to use every day.
 
@@ -163,33 +163,33 @@ Open `http://localhost:8000` and register your first account.
 
 ## Configuration
 
-All settings are configured via environment variables (prefix: `WEBTTY_`):
+All settings are configured via environment variables (prefix: `MEBTTY_`):
 
 | Variable                               | Default                                | Description                                  |
 | -------------------------------------- | -------------------------------------- | -------------------------------------------- |
-| `WEBTTY_SECRET_KEY`                    | Auto-generated                         | JWT signing key. **Set this in production.** |
-| `WEBTTY_DATABASE_URL`                  | `sqlite+aiosqlite:///./webtty.db`      | Database connection string                   |
-| `WEBTTY_BROWSE_ROOT`                   | `~` (user home)                        | Root directory for the file browser          |
-| `WEBTTY_STATIC_DIR`                    | Auto-detected                          | Path to frontend build output                |
-| `WEBTTY_UPLOAD_DIR`                    | `./uploads`                            | Directory for uploaded files and avatars     |
-| `WEBTTY_ACCESS_TOKEN_EXPIRE_MINUTES`   | `60`                                   | JWT access token lifetime                    |
-| `WEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`     | `7`                                    | JWT refresh token lifetime                   |
-| `WEBTTY_MAX_UPLOAD_SIZE`               | `104857600`                            | Max upload size in bytes (100MB)             |
-| `WEBTTY_HOST`                          | `0.0.0.0`                              | Server bind address                          |
-| `WEBTTY_PORT`                          | `8000`                                 | Server listen port                           |
+| `MEBTTY_SECRET_KEY`                    | Auto-generated                         | JWT signing key. **Set this in production.** |
+| `MEBTTY_DATABASE_URL`                  | `sqlite+aiosqlite:///./mebtty.db`      | Database connection string                   |
+| `MEBTTY_BROWSE_ROOT`                   | `~` (user home)                        | Root directory for the file browser          |
+| `MEBTTY_STATIC_DIR`                    | Auto-detected                          | Path to frontend build output                |
+| `MEBTTY_UPLOAD_DIR`                    | `./uploads`                            | Directory for uploaded files and avatars     |
+| `MEBTTY_ACCESS_TOKEN_EXPIRE_MINUTES`   | `60`                                   | JWT access token lifetime                    |
+| `MEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`     | `7`                                    | JWT refresh token lifetime                   |
+| `MEBTTY_MAX_UPLOAD_SIZE`               | `104857600`                            | Max upload size in bytes (100MB)             |
+| `MEBTTY_HOST`                          | `0.0.0.0`                              | Server bind address                          |
+| `MEBTTY_PORT`                          | `8000`                                 | Server listen port                           |
 
 ### Production Example
 
 ```bash
-export WEBTTY_SECRET_KEY="your-random-secret-string"
-export WEBTTY_DATABASE_URL="sqlite+aiosqlite:////data/webtty.db"
+export MEBTTY_SECRET_KEY="your-random-secret-string"
+export MEBTTY_DATABASE_URL="sqlite+aiosqlite:////data/mebtty.db"
 ./deploy.sh
 ```
 
 ## Project Structure
 
 ```text
-webtty/
+mebtty/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI application entry point

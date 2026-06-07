@@ -1,17 +1,17 @@
 services:
-  webtty:
+  mebtty:
     build: .
-    container_name: webtty
+    container_name: mebtty
     ports:
       - "8000:8000"
     volumes:
-      - webtty-data:/app/data
-      - webtty-uploads:/app/uploads
+      - mebtty-data:/app/data
+      - mebtty-uploads:/app/uploads
     environment:
-      - WEBTTY_SECRET_KEY=change-me-to-a-random-string-in-production
-      - WEBTTY_DATABASE_URL=sqlite+aiosqlite:////app/data/webtty.db
+      - MEBTTY_SECRET_KEY=change-me-to-a-random-string-in-production
+      - MEBTTY_DATABASE_URL=sqlite+aiosqlite:////app/data/mebtty.db
     restart: unless-stopped
 
 volumes:
-  webtty-data:
-  webtty-uploads:
+  mebtty-data:
+  mebtty-uploads:
