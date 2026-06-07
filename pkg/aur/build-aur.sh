@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./pkg/aur/build-aur.sh [version]    # Build AUR package with specified version
-#   ./pkg/aur/build-aur.sh              # Build AUR package with version from git tag or 0.0.0-dev
+#   ./pkg/aur/build-aur.sh              # Build AUR package with version from git tag or 0.0.0dev
 #   ./pkg/aur/build-aur.sh --clean      # Remove build artifacts
 #   ./pkg/aur/build-aur.sh --help       # Show help
 #
@@ -28,8 +28,10 @@ get_version() {
     if git -C "$PROJECT_ROOT" describe --tags --exact-match >/dev/null 2>&1; then
         VERSION=$(git -C "$PROJECT_ROOT" describe --tags --exact-match | sed 's/^v//')
     else
-        VERSION="${1:-0.0.0-dev}"
+        VERSION="${1:-0.0.0dev}"
     fi
+    # Sanitize: replace hyphens with dots (Arch pkgver cannot contain hyphens)
+    VERSION=$(echo "$VERSION" | tr '-' '.')
     echo "$VERSION"
 }
 
@@ -82,7 +84,7 @@ build_aur() {
     # Copy install script
     cp "$SCRIPT_DIR/webtty.install" "$build_dir/webtty.install"
 
-    # Generate PKGBUILD for local build
+    # Generate PKGBUILD for local build (without source array, reference local files)
     cat > "$build_dir/PKGBUILD" <<EOF
 # Maintainer: WebTTY Contributors
 pkgname=webtty
@@ -94,10 +96,12 @@ url="https://github.com/anthropics/webtty"
 license=('MIT')
 depends=('glibc' 'gcc-libs')
 install=webtty.install
+source=()
 
 package() {
-    install -Dm755 "\$srcdir/webtty-${version}-linux-amd64" "\$pkgdir/usr/bin/webtty"
-    install -Dm644 "\$srcdir/webtty.service" "\$pkgdir/usr/lib/systemd/system/webtty.service"
+    cd "\$srcdir/.."
+    install -Dm755 "webtty-${version}-linux-amd64" "\$pkgdir/usr/bin/webtty"
+    install -Dm644 "webtty.service" "\$pkgdir/usr/lib/systemd/system/webtty.service"
 }
 EOF
 
@@ -140,7 +144,7 @@ print_help() {
     echo "Usage: ./pkg/aur/build-aur.sh [command] [version]"
     echo ""
     echo "Commands:"
-    echo "  (none) [version]  Build AUR package (default: git tag or 0.0.0-dev)"
+    echo "  (none) [version]  Build AUR package (default: git tag or 0.0.0dev)"
     echo "  --clean           Remove AUR build artifacts"
     echo "  --help            Show this help message"
     echo ""
@@ -149,7 +153,7 @@ print_help() {
     echo "  - Cannot run as root"
     echo ""
     echo "Examples:"
-    echo "  ./pkg/aur/build-aur.sh              # Use git tag or 0.0.0-dev"
+    echo "  ./pkg/aur/build-aur.sh              # Use git tag or 0.0.0dev"
     echo "  ./pkg/aur/build-aur.sh 1.2.3        # Build version 1.2.3"
     echo "  ./pkg/aur/build-aur.sh --clean      # Clean up"
     echo ""
