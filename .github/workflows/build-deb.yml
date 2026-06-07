@@ -89,10 +89,10 @@ jobs:
           chmod 644 "$PKG_DIR/lib/systemd/system/webtty.service"
 
           # Copy DEBIAN metadata with version substitution
-          sed "s/\${VERSION}/$VERSION/g" debian/DEBIAN/control > "$PKG_DIR/DEBIAN/control"
-          cp debian/DEBIAN/postinst  "$PKG_DIR/DEBIAN/postinst"
-          cp debian/DEBIAN/prerm     "$PKG_DIR/DEBIAN/prerm"
-          cp debian/DEBIAN/postrm    "$PKG_DIR/DEBIAN/postrm"
+          sed "s/\${VERSION}/$VERSION/g" pkg/deb/DEBIAN/control > "$PKG_DIR/DEBIAN/control"
+          cp pkg/deb/DEBIAN/postinst  "$PKG_DIR/DEBIAN/postinst"
+          cp pkg/deb/DEBIAN/prerm     "$PKG_DIR/DEBIAN/prerm"
+          cp pkg/deb/DEBIAN/postrm    "$PKG_DIR/DEBIAN/postrm"
           chmod 755 "$PKG_DIR/DEBIAN/postinst" "$PKG_DIR/DEBIAN/prerm" "$PKG_DIR/DEBIAN/postrm"
 
       - name: Build deb package
