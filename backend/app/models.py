@@ -93,7 +93,7 @@ class UserSettings(Base):
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
     theme_mode = Column(String(16), default="system", nullable=False)
     accent_color = Column(String(32), default="#7c3aed", nullable=False)
-    tab_title_format = Column(String(256), default="{shell} #{index}", nullable=False)
+    tab_title_format = Column(String(256), default="{user}: {cwd}", nullable=False)
     sidebar_position = Column(String(16), default="right", nullable=False)
     session_timeout = Column(Integer, default=0, nullable=False)  # 0 = disabled, value in hours
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
