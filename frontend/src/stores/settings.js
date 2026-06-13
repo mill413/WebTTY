@@ -5,7 +5,7 @@ export const useSettingsStore = defineStore('settings', {
   state: () => ({
     themeMode: localStorage.getItem('mebtty-theme') || 'system',
     accentColor: localStorage.getItem('mebtty-accent') || '#7c3aed',
-    tabTitleFormat: '{shell} #{index}',
+    tabTitleFormat: '{user}: {cwd}',
     sidebarPosition: 'right',
     sessionTimeout: 0,
     statusBarVisible: localStorage.getItem('mebtty-statusbar-visible') !== 'false',
