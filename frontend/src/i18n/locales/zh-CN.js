@@ -96,7 +96,8 @@ export default {
     deleteConfirm: '确定要删除 {name} 吗？',
     failedCreateFolder: '创建文件夹失败',
     failedRename: '重命名失败',
-    failedDelete: '删除失败'
+    failedDelete: '删除失败',
+    showHidden: '显示隐藏文件'
   },
   settings: {
     title: '设置',

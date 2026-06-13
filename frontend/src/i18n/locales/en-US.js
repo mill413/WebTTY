@@ -96,7 +96,8 @@ export default {
     deleteConfirm: 'Are you sure you want to delete {name}?',
     failedCreateFolder: 'Failed to create folder',
     failedRename: 'Failed to rename',
-    failedDelete: 'Failed to delete'
+    failedDelete: 'Failed to delete',
+    showHidden: 'Show hidden files'
   },
   settings: {
     title: 'Settings',
