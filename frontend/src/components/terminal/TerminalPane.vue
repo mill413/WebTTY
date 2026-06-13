@@ -26,6 +26,22 @@ let wsConnection = null
 let resizeObserver = null
 let copyOnSelectHandler = null
 
+function legacyCopy(text) {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.top = '0'
+  textarea.style.left = '0'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+  try {
+    document.execCommand('copy')
+  } catch {}
+  document.body.removeChild(textarea)
+}
+
 const terminalThemes = {
   dark: {
     background: '#1e1e2e',
@@ -134,13 +150,15 @@ function initTerminal() {
   // Handle Ctrl+V / Cmd+V paste (without Shift) since xterm.js only handles Ctrl+Shift+V by default
   terminal.attachCustomKeyEventHandler((e) => {
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key === 'v' || e.key === 'V' || e.code === 'KeyV')) {
-      navigator.clipboard.readText().then((text) => {
-        if (text && wsConnection) {
-          wsConnection.sendData(text)
-        }
-      }).catch(() => {
-        // Clipboard read may fail in insecure contexts; silently ignore
-      })
+      if (navigator.clipboard) {
+        navigator.clipboard.readText().then((text) => {
+          if (text && wsConnection) {
+            wsConnection.sendData(text)
+          }
+        }).catch(() => {
+          // Clipboard read may fail in insecure contexts; silently ignore
+        })
+      }
       return false
     }
     return true
@@ -149,10 +167,16 @@ function initTerminal() {
   // Copy-on-select: copy selected text to clipboard when user finishes a selection
   copyOnSelectHandler = () => {
     const selection = terminal.getSelection()
-    if (selection) {
+    if (!selection) return
+
+    if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(selection).catch(() => {
-        // Clipboard API may fail in insecure contexts; silently ignore
+        // Fall through to legacy method
+        legacyCopy(selection)
       })
+    } else {
+      // Fallback for insecure contexts (e.g. via HTTP tunnel) or older browsers
+      legacyCopy(selection)
     }
   }
   terminalEl.value.addEventListener('mouseup', copyOnSelectHandler)
