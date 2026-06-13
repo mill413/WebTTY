@@ -125,17 +125,9 @@ onMounted(async () => {
     } else {
       terminalStore.activeTabId = existing.id
     }
-  } else if (terminalStore.sessions.length > 0) {
-    // Auto-create tabs only for sessions with active runtimes
-    const runningSessions = terminalStore.sessions.filter((s) => s.status === 'running')
-    for (const session of runningSessions) {
-      terminalStore.addTabForSession(session.id, session.title || `${session.shell} session`, session.shell)
-    }
-    if (runningSessions.length > 0) {
-      const firstRunningTab = terminalStore.tabs.find((t) => t.sessionId === runningSessions[0].id)
-      if (firstRunningTab) terminalStore.activeTabId = firstRunningTab.id
-    }
   }
+  // Note: do NOT auto-restore all running sessions as tabs.
+  // Tabs are per-browser; users can manually reconnect from the session list.
 
   // Auto-open file browser if query param is set
   if (route.query.files === '1') {
