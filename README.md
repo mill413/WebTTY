@@ -200,38 +200,7 @@ sudo ./install.sh --uninstall
 
 ### Arch Linux (AUR)
 
-Install MebTTY as a native Arch Linux package using pacman.
-
-**From GitHub Release:**
-
-```bash
-# Download the pre-built package
-wget https://github.com/mill413/mebtty/releases/download/v1.0.0/mebtty-1.0.0-1-x86_64.pkg.tar.zst
-
-# Install
-sudo pacman -U mebtty-1.0.0-1-x86_64.pkg.tar.zst
-
-# Enable and start the service
-sudo systemctl enable --now mebtty
-```
-
-**Using AUR helpers (after publishing to AUR):**
-
-```bash
-yay -S mebtty
-# or
-paru -S mebtty
-```
-
-The package installs the executable to `/usr/bin/mebtty` and the systemd service to `/usr/lib/systemd/system/`. Configuration is auto-generated at `/etc/mebtty/mebtty.env` on first install.
-
-```bash
-# Uninstall (keeps config and data)
-sudo pacman -R mebtty
-
-# Full removal
-sudo pacman -Rn mebtty && sudo rm -rf /var/lib/mebtty /etc/mebtty
-```
+> **Note**: AUR package support has been removed. For Arch Linux, please use the standalone executable or Docker.
 
 ## Configuration
 
@@ -333,11 +302,6 @@ mebtty/
 │   │   ├── DEBIAN/              #   DEBIAN metadata (control, postinst, etc.)
 │   │   ├── build-deb.sh         #   Local deb build script
 │   │   └── README.md
-│   └── aur/                     # Arch Linux (AUR) package files
-│       ├── PKGBUILD             #   Package build script template
-│       ├── mebtty.install       #   pacman install hooks
-│       ├── build-aur.sh         #   Local AUR build script
-│       └── README.md
 ├── Dockerfile                   # Multi-stage Docker build
 ├── docker-compose.yml           # Docker Compose configuration
 ├── deploy.sh                    # One-click deployment script
