@@ -11,6 +11,9 @@
 #   ./deploy.sh --logs       # Tail server logs
 #   ./deploy.sh --update     # Pull latest code and redeploy
 #
+# Short options: -D (docker), -K (docker-stop), -s (stop),
+#                -r (restart), -t (status), -l (logs), -u (update)
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -393,15 +396,15 @@ print_help() {
     echo "Usage: ./deploy.sh [command]"
     echo ""
     echo "Commands:"
-    echo "  (none)         Build frontend + start backend server"
-    echo "  --docker       Deploy via Docker Compose"
-    echo "  --docker-stop  Stop Docker containers"
-    echo "  --stop         Stop the running server"
-    echo "  --restart      Restart the server"
-    echo "  --status       Check if the server is running"
-    echo "  --logs         Tail server logs"
-    echo "  --update       Pull latest code and redeploy"
-    echo "  --help, -h     Show this help message"
+    echo "  (none)             Build frontend + start backend server"
+    echo "  --docker,     -D   Deploy via Docker Compose"
+    echo "  --docker-stop,-K   Stop Docker containers"
+    echo "  --stop,       -s   Stop the running server"
+    echo "  --restart,    -r   Restart the server"
+    echo "  --status,     -t   Check if the server is running"
+    echo "  --logs,       -l   Tail server logs"
+    echo "  --update,     -u   Pull latest code and redeploy"
+    echo "  --help,       -h   Show this help message"
     echo ""
     echo "Environment variables (or .env file):"
     echo "  MEBTTY_HOST              Bind address          (default: 0.0.0.0)"
@@ -420,25 +423,25 @@ print_help() {
 # ── Main ─────────────────────────────────────────────────────────
 
 case "${1:-}" in
-    --docker)
+    --docker|-D)
         docker_deploy
         ;;
-    --docker-stop)
+    --docker-stop|-K)
         docker_stop
         ;;
-    --stop)
+    --stop|-s)
         stop_server
         ;;
-    --restart)
+    --restart|-r)
         restart_server
         ;;
-    --status)
+    --status|-t)
         show_status
         ;;
-    --logs)
+    --logs|-l)
         show_logs
         ;;
-    --update)
+    --update|-u)
         update_and_redeploy
         ;;
     --help|-h)
