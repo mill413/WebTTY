@@ -86,6 +86,7 @@ export default {
     newFolderHere: '在此新建文件夹',
     rename: '重命名',
     delete: '删除',
+    copyPath: '复制路径',
     newFolderTitle: '新建文件夹',
     folderNamePlaceholder: '文件夹名称',
     create: '创建',

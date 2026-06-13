@@ -86,6 +86,7 @@ export default {
     newFolderHere: 'New Folder Here',
     rename: 'Rename',
     delete: 'Delete',
+    copyPath: 'Copy Path',
     newFolderTitle: 'New Folder',
     folderNamePlaceholder: 'Folder name',
     create: 'Create',

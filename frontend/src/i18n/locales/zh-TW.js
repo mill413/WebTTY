@@ -86,6 +86,7 @@ export default {
     newFolderHere: '在此新建資料夾',
     rename: '重新命名',
     delete: '刪除',
+    copyPath: '複製路徑',
     newFolderTitle: '新建資料夾',
     folderNamePlaceholder: '資料夾名稱',
     create: '建立',

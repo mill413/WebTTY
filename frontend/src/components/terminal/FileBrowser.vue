@@ -325,6 +325,22 @@ function closeContextMenu() {
   contextMenu.value.show = false
 }
 
+async function copyPath(item) {
+  try {
+    await navigator.clipboard.writeText(item.path)
+  } catch (err) {
+    // Fallback for older browsers
+    const textarea = document.createElement('textarea')
+    textarea.value = item.path
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+  }
+}
+
 function promptRename(item) {
   renameItem.value = item
   renameNewName.value = item.name
@@ -449,12 +465,6 @@ function getIndentStyle(depth) {
             <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
           </svg>
         </button>
-        <button class="fb-btn-icon" @click="$emit('close')" :title="t('fileBrowser.close')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
       </div>
     </div>
 
@@ -561,6 +571,13 @@ function getIndentStyle(depth) {
             <line x1="9" y1="14" x2="15" y2="14"/>
           </svg>
           {{ t('fileBrowser.newFolderHere') }}
+        </button>
+        <button @click="copyPath(contextMenu.item); closeContextMenu()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          </svg>
+          {{ t('fileBrowser.copyPath') }}
         </button>
         <button @click="promptRename(contextMenu.item); closeContextMenu()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
