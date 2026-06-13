@@ -483,7 +483,7 @@ function getIndentStyle(depth) {
           <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
       </span>
-      <template v-for="(seg, i) in breadcrumbSegments" :key="seg.path">
+      <template v-for="(seg, i) in breadcrumbSegments" :key="seg.path + '-' + i">
         <span
           class="fb-bc-segment"
           :class="{ active: seg.path === currentPath }"
