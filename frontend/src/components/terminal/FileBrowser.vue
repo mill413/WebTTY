@@ -413,7 +413,7 @@ function getIndentStyle(depth) {
     </div>
 
     <!-- Tree view -->
-    <div class="fb-tree">
+    <div class="fb-tree" @click.self="selectedItem = null">
       <template v-for="item in getFlatList()" :key="item.path || item.name">
         <div
           v-if="!item.is_loading"
