@@ -62,7 +62,64 @@ const renameNewName = ref('')
 const showDeleteConfirm = ref(false)
 const deleteItem = ref(null)
 
-// --- Breadcrumb ---
+// --- Auto-refresh (polling) ---
+const AUTO_REFRESH_INTERVAL = 5000 // 5 seconds
+let refreshTimer = null
+let isRefreshing = false
+
+function startAutoRefresh() {
+  stopAutoRefresh()
+  refreshTimer = setInterval(autoRefresh, AUTO_REFRESH_INTERVAL)
+}
+
+function stopAutoRefresh() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+    refreshTimer = null
+  }
+}
+
+async function autoRefresh() {
+  if (isRefreshing) return
+  isRefreshing = true
+  try {
+    // Refresh current directory
+    if (currentPath.value !== null && currentPath.value !== undefined) {
+      const res = await api.get('/api/files/browse', { params: { path: currentPath.value || '' } })
+      // Preserve selection if the item still exists
+      const oldSelected = selectedItem.value
+      tree.length = 0
+      tree.push(...res.data.items.map(item => ({ ...item, depth: 0 })))
+      childrenMap[currentPath.value || ''] = res.data.items
+
+      // Try to restore selection
+      if (oldSelected) {
+        const stillExists = tree.find(item => item.path === oldSelected.path && item.name === oldSelected.name)
+        if (stillExists) {
+          selectedItem.value = stillExists
+        } else {
+          selectedItem.value = null
+        }
+      }
+
+      // Refresh all expanded subdirectories
+      for (const path of expandedPaths) {
+        try {
+          const childRes = await api.get('/api/files/browse', { params: { path } })
+          childrenMap[path] = childRes.data.items
+        } catch (err) {
+          // Subdirectory may have been deleted — remove from expanded set
+          expandedPaths.delete(path)
+          delete childrenMap[path]
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Auto-refresh failed:', err)
+  } finally {
+    isRefreshing = false
+  }
+}
 const breadcrumbSegments = computed(() => {
   const root = absoluteRoot.value || '~'
   if (!currentPath.value || currentPath.value === '.') {
@@ -89,12 +146,14 @@ const activeDir = computed(() => {
 onMounted(() => {
   loadDirectory('')
   document.addEventListener('click', closeContextMenu)
+  startAutoRefresh()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', closeContextMenu)
   document.removeEventListener('mousemove', onResize)
   document.removeEventListener('mouseup', stopResize)
+  stopAutoRefresh()
 })
 
 // --- Directory loading ---
