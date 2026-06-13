@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { getCatppuccinFileIcon, getCatppuccinFolderIcon } from 'vscode-icon-resolver'
 import api from '../../services/api'
 import { useI18n } from 'vue-i18n'
@@ -61,6 +61,14 @@ const renameItem = ref(null)
 const renameNewName = ref('')
 const showDeleteConfirm = ref(false)
 const deleteItem = ref(null)
+const showHidden = ref(false)              // show hidden files (dotfiles)
+
+// --- Show hidden files toggle ---
+function toggleShowHidden() {
+  showHidden.value = !showHidden.value
+  // Reload current directory to apply change
+  loadDirectory(currentPath.value)
+}
 
 // --- Auto-refresh (polling) ---
 const AUTO_REFRESH_INTERVAL = 5000 // 5 seconds
@@ -160,7 +168,7 @@ onUnmounted(() => {
 async function loadDirectory(path) {
   loadingPaths.add(path)
   try {
-    const res = await api.get('/api/files/browse', { params: { path } })
+    const res = await api.get('/api/files/browse', { params: { path, show_hidden: showHidden.value } })
     // API returns { path: "." for root, "Documents" for subdirs, absolute_path: full path }
     const curPath = (res.data.path === '.' ? '' : (res.data.path || ''))
     const absPath = res.data.absolute_path || ''
@@ -203,7 +211,7 @@ async function loadChildren(item) {
 
   loadingPaths.add(item.path)
   try {
-    const res = await api.get('/api/files/browse', { params: { path: item.path } })
+    const res = await api.get('/api/files/browse', { params: { path: item.path, show_hidden: showHidden.value } })
     childrenMap[item.path] = res.data.items
     expandedPaths.add(item.path)
   } catch (err) {
@@ -376,7 +384,7 @@ async function refreshAfter(path) {
   }
   // Refresh a subdirectory's children
   try {
-    const res = await api.get('/api/files/browse', { params: { path } })
+    const res = await api.get('/api/files/browse', { params: { path, show_hidden: showHidden.value } })
     childrenMap[path] = res.data.items
   } catch (err) {
     console.error('Failed to refresh:', err)
@@ -438,6 +446,12 @@ function getIndentStyle(depth) {
             <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
             <line x1="12" y1="11" x2="12" y2="17"/>
             <line x1="9" y1="14" x2="15" y2="14"/>
+          </svg>
+        </button>
+        <button class="fb-btn-icon" @click="toggleShowHidden" :class="{ active: showHidden }" :title="t('fileBrowser.showHidden')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
           </svg>
         </button>
         <button class="fb-btn-icon" @click="loadDirectory(currentPath)" :title="t('fileBrowser.refresh')">
@@ -701,6 +715,11 @@ function getIndentStyle(depth) {
 .fb-btn-icon:hover {
   background: var(--surface);
   color: var(--text);
+}
+
+.fb-btn-icon.active {
+  background: var(--surface);
+  color: var(--accent);
 }
 
 /* Breadcrumb */

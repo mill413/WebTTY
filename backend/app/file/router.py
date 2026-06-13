@@ -183,6 +183,7 @@ async def upload_to_browse_dir(
 @router.get("/browse")
 async def browse_directory(
     path: str = Query(""),
+    show_hidden: bool = Query(False),
     current_user=Depends(get_current_user),
 ):
     """Browse directory contents with full metadata."""
@@ -197,6 +198,9 @@ async def browse_directory(
     items = []
     try:
         for entry in sorted(target.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower())):
+            # Skip hidden files unless explicitly requested
+            if not show_hidden and entry.name.startswith('.'):
+                continue
             try:
                 stat = entry.stat()
                 items.append({

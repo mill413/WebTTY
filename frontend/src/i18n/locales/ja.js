@@ -96,7 +96,8 @@ export default {
     deleteConfirm: '{name} を削除してもよろしいですか？',
     failedCreateFolder: 'フォルダの作成に失敗しました',
     failedRename: '名前の変更に失敗しました',
-    failedDelete: '削除に失敗しました'
+    failedDelete: '削除に失敗しました',
+    showHidden: '隠しファイルを表示'
   },
   settings: {
     title: '設定',
