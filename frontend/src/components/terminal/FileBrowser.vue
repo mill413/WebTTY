@@ -64,10 +64,10 @@ const deleteItem = ref(null)
 const showHidden = ref(false)              // show hidden files (dotfiles)
 
 // --- Show hidden files toggle ---
-function toggleShowHidden() {
+async function toggleShowHidden() {
   showHidden.value = !showHidden.value
-  // Reload current directory to apply change
-  loadDirectory(currentPath.value)
+  // Reload current directory and all expanded subdirectories without collapsing
+  await refreshAll(false)
 }
 
 // --- Auto-refresh (polling) ---
@@ -93,7 +93,7 @@ async function autoRefresh() {
   try {
     // Refresh current directory
     if (currentPath.value !== null && currentPath.value !== undefined) {
-      const res = await api.get('/api/files/browse', { params: { path: currentPath.value || '' } })
+      const res = await api.get('/api/files/browse', { params: { path: currentPath.value || '', show_hidden: showHidden.value } })
       // Preserve selection if the item still exists
       const oldSelected = selectedItem.value
       tree.length = 0
@@ -113,7 +113,7 @@ async function autoRefresh() {
       // Refresh all expanded subdirectories
       for (const path of expandedPaths) {
         try {
-          const childRes = await api.get('/api/files/browse', { params: { path } })
+          const childRes = await api.get('/api/files/browse', { params: { path, show_hidden: showHidden.value } })
           childrenMap[path] = childRes.data.items
         } catch (err) {
           // Subdirectory may have been deleted — remove from expanded set
@@ -399,6 +399,33 @@ async function refreshAfter(path) {
     childrenMap[path] = res.data.items
   } catch (err) {
     console.error('Failed to refresh:', err)
+  }
+}
+
+async function refreshAll(clearSelection = true) {
+  try {
+    // Reload current directory
+    const res = await api.get('/api/files/browse', { params: { path: currentPath.value || '', show_hidden: showHidden.value } })
+    tree.length = 0
+    tree.push(...res.data.items.map(item => ({ ...item, depth: 0 })))
+    childrenMap[currentPath.value || ''] = res.data.items
+
+    if (clearSelection) {
+      selectedItem.value = null
+    }
+
+    // Reload all expanded subdirectories
+    for (const path of expandedPaths) {
+      try {
+        const childRes = await api.get('/api/files/browse', { params: { path, show_hidden: showHidden.value } })
+        childrenMap[path] = childRes.data.items
+      } catch (err) {
+        expandedPaths.delete(path)
+        delete childrenMap[path]
+      }
+    }
+  } catch (err) {
+    console.error('Failed to reload directory:', err)
   }
 }
 
