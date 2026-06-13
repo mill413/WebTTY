@@ -1,12 +1,13 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import ThemeToggle from '../components/common/ThemeToggle.vue'
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const isLogin = ref(true)
@@ -14,6 +15,12 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
+
+onMounted(() => {
+  if (route.query.mode === 'register') {
+    isLogin.value = false
+  }
+})
 
 function toggleMode() {
   isLogin.value = !isLogin.value

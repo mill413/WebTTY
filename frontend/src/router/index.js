@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import axios from 'axios'
 
 const routes = [
   {
@@ -37,13 +37,29 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const token = localStorage.getItem('access_token')
+
+  // If authenticated, redirect away from login
+  if (to.meta.guest && token) {
+    return next({ name: 'Terminal' })
+  }
+
+  // If unauthenticated and not going to login, check if any users exist
+  if (!token && to.name !== 'Login') {
+    try {
+      const res = await axios.get('/api/auth/has-users')
+      if (!res.data.has_users) {
+        return next({ name: 'Login', query: { mode: 'register' } })
+      }
+    } catch (e) {
+      // If check fails, fall through to login
+    }
+    return next({ name: 'Login' })
+  }
 
   if (to.meta.requiresAuth && !token) {
     next({ name: 'Login' })
-  } else if (to.meta.guest && token) {
-    next({ name: 'Terminal' })
   } else {
     next()
   }
