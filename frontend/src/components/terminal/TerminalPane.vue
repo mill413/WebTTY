@@ -256,7 +256,7 @@ defineExpose({ focus, fit, getTerminal, openSearch, closeSearch })
 .terminal-pane {
   width: 100%;
   height: 100%;
-  padding: 4px;
+  padding: 0;
   background: var(--bg);
 }
 
