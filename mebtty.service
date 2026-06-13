@@ -1,0 +1,37 @@
+[Unit]
+Description=MebTTY - Self-hosted web terminal
+Documentation=https://github.com/mill413/mebtty
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/mebtty
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+
+# Environment defaults (override in /etc/mebtty/mebtty.env)
+Environment=MEBTTY_HOST=0.0.0.0
+Environment=MEBTTY_PORT=18888
+EnvironmentFile=-/etc/mebtty/mebtty.env
+
+# Data directories
+StateDirectory=mebtty
+LogsDirectory=mebtty
+Environment=MEBTTY_DATABASE_URL=sqlite+aiosqlite:////var/lib/mebtty/mebtty.db
+Environment=MEBTTY_UPLOAD_DIR=/var/lib/mebtty/uploads
+
+# Logging to systemd journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mebtty
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/mebtty
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

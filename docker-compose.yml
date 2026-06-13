@@ -3,7 +3,7 @@ services:
     build: .
     container_name: mebtty
     ports:
-      - "8000:8000"
+      - "18888:18888"
     volumes:
       - mebtty-data:/app/data
       - mebtty-uploads:/app/uploads

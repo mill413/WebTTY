@@ -35,6 +35,6 @@ ENV MEBTTY_STATIC_DIR=/app/frontend/dist
 ENV MEBTTY_DATABASE_URL=sqlite+aiosqlite:////app/data/mebtty.db
 ENV MEBTTY_UPLOAD_DIR=/app/uploads
 
-EXPOSE 8000
+EXPOSE 18888
 
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "18888"]

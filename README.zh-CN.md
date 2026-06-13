@@ -77,6 +77,7 @@ MebTTY 将任意现代浏览器变成全功能终端。基于 **FastAPI** 和 **
 ### 部署与运维
 
 - **一键部署** — 单个 shell 脚本完成依赖检查、构建和服务器启动
+- **独立可执行程序** — 使用 PyInstaller 构建单个 Linux 二进制文件，安装为 systemd 服务，带安全加固和自动重启
 - **Docker 支持** — 多阶段构建，持久化卷和自动重启
 - **会话自动清理** — 服务重启时清理过期会话；按可配置超时自动删除过期会话
 - **数据库灵活性** — 默认 SQLite，生产环境支持 PostgreSQL
@@ -130,10 +131,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # 启动（同时提供 API 和前端服务）
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --host 0.0.0.0 --port 18888
 ```
 
-打开 `http://localhost:8000` 并注册第一个账户。
+打开 `http://localhost:18888` 并注册第一个账户。
 
 ### Shell 脚本
 
@@ -141,7 +142,7 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ./deploy.sh
 ```
 
-这会自动安装依赖、构建前端并在端口 8000 启动服务器。
+这会自动安装依赖、构建前端并在端口 18888 启动服务器。
 
 ```bash
 ./deploy.sh --status     # 查看服务器状态
@@ -159,7 +160,43 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 docker compose up -d
 ```
 
-打开 `http://localhost:8000` 并注册第一个账户。
+打开 `http://localhost:18888` 并注册第一个账户。
+
+### 独立可执行程序（systemd 服务）
+
+构建包含前后端的单个自包含二进制文件，然后安装为 systemd 系统服务。
+
+**前置要求：** Python 3.12+、Node.js 18+、npm
+
+```bash
+# 构建：编译前端并打包为单个可执行文件
+./build.sh
+
+# 安装：复制二进制、创建数据目录、生成配置、注册 systemd 服务
+sudo ./install.sh
+```
+
+安装后，MebTTY 作为受管理的 systemd 服务运行，带有安全加固（`ProtectSystem=strict`、`NoNewPrivileges`、`PrivateTmp`）和故障自动重启。
+
+```bash
+sudo systemctl start mebtty      # 启动服务
+sudo systemctl stop mebtty       # 停止服务
+sudo systemctl restart mebtty    # 重启服务
+sudo systemctl status mebtty     # 查看服务状态
+sudo journalctl -u mebtty -f     # 查看日志
+```
+
+| 路径                              | 说明                         |
+| --------------------------------- | ---------------------------- |
+| `/usr/local/bin/mebtty`           | 可执行文件                   |
+| `/etc/mebtty/mebtty.env`          | 环境配置（自动生成）         |
+| `/var/lib/mebtty/mebtty.db`       | SQLite 数据库                |
+| `/var/lib/mebtty/uploads`         | 上传文件目录                 |
+
+```bash
+# 卸载（移除服务和二进制文件，保留数据和配置）
+sudo ./install.sh --uninstall
+```
 
 ## 配置说明
 
@@ -176,7 +213,7 @@ docker compose up -d
 | `MEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`   | `7`                                | JWT 刷新令牌有效期                   |
 | `MEBTTY_MAX_UPLOAD_SIZE`             | `104857600`                        | 最大上传大小（字节，100MB）          |
 | `MEBTTY_HOST`                        | `0.0.0.0`                          | 服务器绑定地址                       |
-| `MEBTTY_PORT`                        | `8000`                             | 服务器监听端口                       |
+| `MEBTTY_PORT`                        | `18888`                            | 服务器监听端口                       |
 
 ### 生产环境示例
 
@@ -253,6 +290,9 @@ mebtty/
 │   │       └── global.css
 │   ├── package.json
 │   └── vite.config.js
+├── build.sh                     # 构建独立可执行文件 (PyInstaller)
+├── install.sh                   # 安装/卸载 systemd 服务
+├── mebtty.service               # systemd 服务单元文件
 ├── Dockerfile                   # 多阶段 Docker 构建
 ├── docker-compose.yml           # Docker Compose 配置
 ├── deploy.sh                    # 一键部署脚本
@@ -352,7 +392,7 @@ mebtty/
 # 终端 1：后端热重载
 cd backend
 source venv/bin/activate
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 18888
 
 # 终端 2：前端开发服务器，带 API 代理
 cd frontend

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Git pre-push hook: validate tag format before pushing.
+# Allowed formats: vx.y.z or vx.y.z.dev (e.g., v1.2.3, v1.0.0.dev)
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    # Only check tag pushes (refs/tags/...)
+    if [[ "$local_ref" == refs/tags/* ]]; then
+        tag_name="${local_ref#refs/tags/}"
+        version="${tag_name#v}"
+        if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.dev)?$ ]]; then
+            echo "ERROR: Invalid tag format '${tag_name}'"
+            echo "Allowed formats: vx.y.z or vx.y.z.dev (e.g., v1.2.3, v1.0.0.dev)"
+            echo "Delete with: git tag -d ${tag_name}"
+            exit 1
+        fi
+    fi
+done

@@ -77,6 +77,7 @@ Deploy with a single script or Docker — and access your server from anywhere.
 ### Deployment & Operations
 
 - **One-Click Deploy** — Single shell script handles dependency checks, build, and server startup
+- **Standalone Executable** — Build a single Linux binary with PyInstaller, install as a systemd service with security hardening and auto-restart
 - **Docker Support** — Multi-stage build with persistent volumes and auto-restart
 - **Session Auto-Cleanup** — Stale sessions cleaned on server restart; expired sessions auto-deleted by configurable timeout
 - **Database Flexibility** — SQLite by default, PostgreSQL supported for production
@@ -130,10 +131,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Start (serves both API and frontend)
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --host 0.0.0.0 --port 18888
 ```
 
-Open `http://localhost:8000` and register your first account.
+Open `http://localhost:18888` and register your first account.
 
 ### Shell Script
 
@@ -141,7 +142,7 @@ Open `http://localhost:8000` and register your first account.
 ./deploy.sh
 ```
 
-This will automatically install dependencies, build the frontend and start the server on port 8000.
+This will automatically install dependencies, build the frontend and start the server on port 18888.
 
 ```bash
 ./deploy.sh --status     # Check server status
@@ -159,7 +160,47 @@ This will automatically install dependencies, build the frontend and start the s
 docker compose up -d
 ```
 
-Open `http://localhost:8000` and register your first account.
+Open `http://localhost:18888` and register your first account.
+
+### Standalone Executable (systemd service)
+
+Build a single self-contained binary that includes both the backend and the frontend, then install it as a systemd service.
+
+**Prerequisites:** Python 3.12+, Node.js 18+, npm
+
+```bash
+# Build: compile frontend and package into a single executable
+./build.sh
+
+# Install: copy binary, create data dirs, generate config, register systemd service
+sudo ./install.sh
+```
+
+After installation, MebTTY runs as a managed systemd service with security hardening (`ProtectSystem=strict`, `NoNewPrivileges`, `PrivateTmp`) and automatic restart on failure.
+
+```bash
+sudo systemctl start mebtty      # Start the service
+sudo systemctl stop mebtty       # Stop the service
+sudo systemctl restart mebtty    # Restart the service
+sudo systemctl status mebtty     # Check service status
+sudo journalctl -u mebtty -f     # View logs
+```
+
+| Path                              | Description                          |
+| --------------------------------- | ------------------------------------ |
+| `/usr/local/bin/mebtty`           | Executable binary                    |
+| `/etc/mebtty/mebtty.env`          | Environment config (auto-generated)  |
+| `/var/lib/mebtty/mebtty.db`       | SQLite database                      |
+| `/var/lib/mebtty/uploads`         | Uploaded files                       |
+
+```bash
+# Uninstall (removes service and binary, keeps data and config)
+sudo ./install.sh --uninstall
+```
+
+### Arch Linux (AUR)
+
+> **Note**: AUR package support has been removed. For Arch Linux, please use the standalone executable or Docker.
 
 ## Configuration
 
@@ -176,7 +217,7 @@ All settings are configured via environment variables (prefix: `MEBTTY_`):
 | `MEBTTY_REFRESH_TOKEN_EXPIRE_DAYS`     | `7`                                    | JWT refresh token lifetime                   |
 | `MEBTTY_MAX_UPLOAD_SIZE`               | `104857600`                            | Max upload size in bytes (100MB)             |
 | `MEBTTY_HOST`                          | `0.0.0.0`                              | Server bind address                          |
-| `MEBTTY_PORT`                          | `8000`                                 | Server listen port                           |
+| `MEBTTY_PORT`                          | `18888`                                | Server listen port                           |
 
 ### Production Example
 
@@ -253,6 +294,14 @@ mebtty/
 │   │       └── global.css
 │   ├── package.json
 │   └── vite.config.js
+├── build.sh                     # Build standalone executable (PyInstaller)
+├── install.sh                   # Install/uninstall systemd service
+├── mebtty.service               # systemd unit file
+├── pkg/
+│   ├── deb/                     # Debian package files
+│   │   ├── DEBIAN/              #   DEBIAN metadata (control, postinst, etc.)
+│   │   ├── build-deb.sh         #   Local deb build script
+│   │   └── README.md
 ├── Dockerfile                   # Multi-stage Docker build
 ├── docker-compose.yml           # Docker Compose configuration
 ├── deploy.sh                    # One-click deployment script
@@ -352,7 +401,7 @@ The terminal uses a custom binary protocol for efficiency:
 # Terminal 1: Backend with hot reload
 cd backend
 source venv/bin/activate
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 18888
 
 # Terminal 2: Frontend dev server with API proxy
 cd frontend

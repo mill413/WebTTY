@@ -31,7 +31,7 @@ if [[ -f "$ENV_FILE" ]]; then
 fi
 
 HOST="${MEBTTY_HOST:-0.0.0.0}"
-PORT="${MEBTTY_PORT:-8000}"
+PORT="${MEBTTY_PORT:-18888}"
 
 # Required minimum versions
 MIN_PYTHON_MAJOR=3
@@ -374,7 +374,7 @@ docker_deploy() {
     echo ""
     echo -e "${CYAN}========================================${NC}"
     echo -e "${CYAN}  MebTTY is running (Docker)!${NC}"
-    echo -e "${CYAN}  Open:   http://localhost:8000${NC}"
+    echo -e "${CYAN}  Open:   http://localhost:18888${NC}"
     echo -e "${CYAN}  Stop:   ./deploy.sh --docker-stop${NC}"
     echo -e "${CYAN}  Logs:   docker compose logs -f${NC}"
     echo -e "${CYAN}========================================${NC}"
@@ -405,7 +405,7 @@ print_help() {
     echo ""
     echo "Environment variables (or .env file):"
     echo "  MEBTTY_HOST              Bind address          (default: 0.0.0.0)"
-    echo "  MEBTTY_PORT              Listen port            (default: 8000)"
+    echo "  MEBTTY_PORT              Listen port            (default: 18888)"
     echo "  MEBTTY_SECRET_KEY        JWT secret             (default: auto-generated)"
     echo "  MEBTTY_DATABASE_URL      Database URL           (default: SQLite in data/)"
     echo "  MEBTTY_UPLOAD_DIR        Upload directory       (default: ./uploads)"
