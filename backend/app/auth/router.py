@@ -5,7 +5,7 @@ from pathlib import Path
 import aiofiles
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
@@ -31,6 +31,13 @@ def detect_login_shell() -> str:
         return shell if shell else "/bin/bash"
     except Exception:
         return os.environ.get("SHELL", "/bin/bash")
+
+
+@router.get("/has-users")
+async def has_users(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(func.count()).select_from(User))
+    count = result.scalar_one()
+    return {"has_users": count > 0}
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
