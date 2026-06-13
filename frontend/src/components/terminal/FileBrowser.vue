@@ -134,13 +134,13 @@ const breadcrumbSegments = computed(() => {
     // Break the absolute root path into clickable segments
     const rootParts = root.split('/').filter(Boolean)
     if (rootParts.length === 0) return [{ label: root, path: '' }]
-    const segments = [{ label: '/', path: '' }].concat(rootParts.map(part => ({ label: part, path: '' })))
+    const segments = rootParts.map(part => ({ label: part, path: '' }))
     return segments
   }
   const parts = currentPath.value.split('/').filter(Boolean)
   // Break the absolute root path into clickable segments
   const rootParts = root.split('/').filter(Boolean)
-  const segments = [{ label: '/', path: '' }].concat(rootParts.map(part => ({ label: part, path: '' })))
+  const segments = rootParts.map(part => ({ label: part, path: '' }))
   let accumulated = ''
   for (const part of parts) {
     accumulated = accumulated ? accumulated + '/' + part : part
@@ -477,10 +477,12 @@ function getIndentStyle(depth) {
 
     <!-- Breadcrumb navigation -->
     <div class="fb-breadcrumb">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fb-bc-icon">
-        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
+      <span class="fb-bc-home" @click="clickBreadcrumb('')" title="Root">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fb-bc-icon">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </span>
       <template v-for="(seg, i) in breadcrumbSegments" :key="seg.path">
         <span
           class="fb-bc-segment"
@@ -752,6 +754,22 @@ function getIndentStyle(depth) {
   flex-shrink: 0;
   margin-right: 4px;
   color: var(--subtext);
+}
+
+.fb-bc-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 1px 3px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  transition: all 0.1s;
+}
+
+.fb-bc-home:hover {
+  background: var(--surface);
+  color: var(--text);
 }
 
 .fb-bc-segment {
