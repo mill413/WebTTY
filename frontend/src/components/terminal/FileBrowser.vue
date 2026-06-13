@@ -129,21 +129,12 @@ async function autoRefresh() {
   }
 }
 const breadcrumbSegments = computed(() => {
-  const root = absoluteRoot.value || '~'
-  if (!currentPath.value || currentPath.value === '.') {
-    // Break the absolute root path into clickable segments
-    const rootParts = root.split('/').filter(Boolean)
-    if (rootParts.length === 0) return [{ label: root, path: '' }]
-    const segments = rootParts.map(part => ({ label: part, path: '' }))
-    return segments
-  }
-  const parts = currentPath.value.split('/').filter(Boolean)
-  // Break the absolute root path into clickable segments
-  const rootParts = root.split('/').filter(Boolean)
-  const segments = rootParts.map(part => ({ label: part, path: '' }))
-  let accumulated = ''
+  const path = currentPath.value || '/'
+  const parts = path.split('/').filter(Boolean)
+  const segments = []
+  let accumulated = '/'
   for (const part of parts) {
-    accumulated = accumulated ? accumulated + '/' + part : part
+    accumulated = accumulated === '/' ? '/' + part : accumulated + '/' + part
     segments.push({ label: part, path: accumulated })
   }
   return segments
@@ -175,16 +166,10 @@ async function loadDirectory(path) {
   loadingPaths.add(path)
   try {
     const res = await api.get('/api/files/browse', { params: { path, show_hidden: showHidden.value } })
-    // API returns { path: "." for root, "Documents" for subdirs, absolute_path: full path }
-    const curPath = (res.data.path === '.' ? '' : (res.data.path || ''))
-    const absPath = res.data.absolute_path || ''
-    // Compute browse root by stripping current path from absolute path
-    if (absPath && curPath) {
-      absoluteRoot.value = absPath.slice(0, absPath.length - curPath.length).replace(/\/$/, '') || absPath
-    } else {
-      absoluteRoot.value = absPath || '~'
-    }
+    // API now returns absolute paths for both path and absolute_path
+    const curPath = res.data.path || '/'
     currentPath.value = curPath
+    absoluteRoot.value = '/'
 
     // Reset tree
     tree.length = 0
@@ -273,9 +258,7 @@ function handleDblClick(item) {
 
 function clickBreadcrumb(path) {
   selectedItem.value = null
-  if (path !== currentPath.value) {
-    loadDirectory(path)
-  }
+  loadDirectory(path)
 }
 
 // --- File operations ---
@@ -477,12 +460,13 @@ function getIndentStyle(depth) {
 
     <!-- Breadcrumb navigation -->
     <div class="fb-breadcrumb">
-      <span class="fb-bc-home" @click="clickBreadcrumb('')" title="Root">
+      <span class="fb-bc-home" @click="clickBreadcrumb('/')" title="/">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="fb-bc-icon">
           <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
           <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
       </span>
+      <span class="fb-bc-sep">/</span>
       <template v-for="(seg, i) in breadcrumbSegments" :key="seg.path + '-' + i">
         <span
           class="fb-bc-segment"
@@ -501,17 +485,25 @@ function getIndentStyle(depth) {
           class="fb-tree-item"
           :class="{
             'is-selected': selectedItem && selectedItem.path === item.path,
-            'is-dir': item.is_dir
+            'is-dir': item.is_dir,
+            'is-inaccessible': !item.accessible
           }"
           :style="getIndentStyle(item.depth)"
-          @click="handleClick(item)"
-          @dblclick="handleDblClick(item)"
-          @contextmenu="handleContextMenu($event, item)"
+          @click="item.accessible && handleClick(item)"
+          @dblclick="item.accessible && handleDblClick(item)"
+          @contextmenu="item.accessible && handleContextMenu($event, item)"
         >
           <!-- Chevron for directories -->
-          <span v-if="item.is_dir" class="fb-chevron" :class="{ expanded: expandedPaths.has(item.path) }">
+          <span v-if="item.is_dir && item.accessible" class="fb-chevron" :class="{ expanded: expandedPaths.has(item.path) }">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
               <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </span>
+          <!-- Lock icon for inaccessible directories -->
+          <span v-else-if="item.is_dir && !item.accessible" class="fb-lock-icon">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
             </svg>
           </span>
           <span v-else class="fb-chevron-spacer"></span>
@@ -841,6 +833,29 @@ function getIndentStyle(depth) {
 .fb-chevron-spacer {
   width: 16px;
   flex-shrink: 0;
+}
+
+.fb-lock-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--overlay);
+}
+
+.fb-tree-item.is-inaccessible {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+.fb-tree-item.is-inaccessible:hover {
+  background: transparent;
+}
+
+.fb-tree-item.is-inaccessible .fb-name {
+  color: var(--subtext);
 }
 
 .fb-icon {

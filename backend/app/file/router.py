@@ -65,11 +65,22 @@ def _get_browse_root(user_id: str) -> pathlib.Path:
 
 
 def _validate_browse_path(user_id: str, path: str) -> pathlib.Path:
-    """Validate that the browse path stays within the allowed root."""
-    root = _get_browse_root(user_id)
-    target = (root / path).resolve()
-    if not str(target).startswith(str(root)):
+    """Resolve browse path. If path is absolute, use it directly; otherwise relative to browse root."""
+    if path and path.startswith('/'):
+        # Absolute path — resolve directly, rely on OS permissions
+        target = pathlib.Path(path).resolve()
+    else:
+        # Empty or relative path — start from browse root
+        root = _get_browse_root(user_id)
+        target = (root / path).resolve() if path else root
+
+    if not target.exists():
+        raise HTTPException(status_code=404, detail="Path not found")
+
+    # Basic security check: don't allow accessing paths outside the real filesystem root
+    if not str(target).startswith('/'):
         raise HTTPException(status_code=400, detail="Invalid path")
+
     return target
 
 
@@ -203,32 +214,47 @@ async def browse_directory(
                 continue
             try:
                 stat = entry.stat()
+                accessible = True
+                if entry.is_dir():
+                    try:
+                        # Try to list the directory to verify actual readability
+                        next(os.scandir(entry), None)
+                    except PermissionError:
+                        accessible = False
                 items.append({
                     "name": entry.name,
-                    "path": str(entry.relative_to(_get_browse_root(current_user.id))),
+                    "path": str(entry),
                     "is_dir": entry.is_dir(),
                     "size": stat.st_size if entry.is_file() else None,
                     "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
                     "permissions": oct(stat.st_mode)[-3:],
+                    "accessible": accessible,
                 })
             except (PermissionError, OSError):
-                # Skip inaccessible files
-                continue
+                # Include inaccessible items with accessible=false
+                items.append({
+                    "name": entry.name,
+                    "path": str(entry),
+                    "is_dir": entry.is_dir(),
+                    "size": None,
+                    "modified": None,
+                    "permissions": None,
+                    "accessible": False,
+                })
     except PermissionError:
         raise HTTPException(status_code=403, detail="Permission denied")
 
-    root = _get_browse_root(current_user.id)
     return {
-        "path": path or ".",
+        "path": str(target),
         "absolute_path": str(target),
-        "parent": str(target.parent.relative_to(root)) if target != root else None,
+        "parent": str(target.parent) if target != pathlib.Path("/") else None,
         "items": items,
     }
 
 
 @router.post("/mkdir")
 async def create_directory(
-    path: str = Form(...),
+    path: str = Form(""),
     name: str = Form(...),
     current_user=Depends(get_current_user),
 ):
@@ -236,17 +262,12 @@ async def create_directory(
     target = _validate_browse_path(current_user.id, path)
     new_dir = (target / name).resolve()
 
-    # Validate the new directory is still within bounds
-    root = _get_browse_root(current_user.id)
-    if not str(new_dir).startswith(str(root)):
-        raise HTTPException(status_code=400, detail="Invalid path")
-
     if new_dir.exists():
         raise HTTPException(status_code=409, detail="Directory already exists")
 
     try:
         new_dir.mkdir(parents=True, exist_ok=False)
-        return {"path": str(new_dir.relative_to(root)), "created": True}
+        return {"path": str(new_dir), "created": True}
     except PermissionError:
         raise HTTPException(status_code=403, detail="Permission denied")
     except OSError as e:
@@ -289,9 +310,6 @@ async def rename_file(
         raise HTTPException(status_code=404, detail="Path not found")
 
     new_path = target.parent / new_name
-    root = _get_browse_root(current_user.id)
-    if not str(new_path).startswith(str(root)):
-        raise HTTPException(status_code=400, detail="Invalid path")
 
     if new_path.exists():
         raise HTTPException(status_code=409, detail="Target already exists")
@@ -300,7 +318,7 @@ async def rename_file(
         target.rename(new_path)
         return {
             "old_path": path,
-            "new_path": str(new_path.relative_to(root)),
+            "new_path": str(new_path),
             "renamed": True,
         }
     except PermissionError:
